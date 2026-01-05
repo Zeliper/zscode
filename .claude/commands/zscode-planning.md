@@ -30,9 +30,16 @@ This command enters planning mode for the current project.
 
 ## Available MCP Tools
 
+- `zscode:status` - Get status overview (recommended, lightweight)
 - `get_full_context` - Get complete project state
+  - Use `lightweight: true` to reduce context by ~70%
+  - Use `includeOutputs: false` (default) to exclude task outputs
 - `create_plan` - Create a new plan with stagings and tasks
-- `zscode:status [planId]` - Get status of all plans or specific plan
+
+**Context Optimization Tips:**
+- Start with `zscode:status` for quick overview
+- Use `get_full_context` with `lightweight: true` when full state is needed
+- Avoid calling `get_full_context` without options (large context usage)
 
 ## Execution Commands (NOT part of planning)
 

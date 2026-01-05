@@ -2,6 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import { StateManager } from "../state/manager.js";
 import { withErrorHandling } from "../errors/index.js";
+import { createResponse, createErrorResponse } from "../utils/format.js";
 
 /**
  * Register context-related tools
@@ -11,8 +12,17 @@ export function registerContextTools(server: McpServer, projectRoot: string): vo
   server.tool(
     "get_full_context",
     "Get the full project context including all plans, stagings, tasks, and history. Use this to understand the current state of the project.",
-    {},
-    async () => {
+    {
+      lightweight: z.boolean().default(false)
+        .describe("If true, return only IDs and status for plans/stagings/tasks (reduces context by ~70%)"),
+      includeOutputs: z.boolean().default(false)
+        .describe("If true, include task outputs (can be large). Default false for reduced context."),
+      includeHistory: z.boolean().default(false)
+        .describe("If true, include recent history entries. Default false."),
+      includeDecisions: z.boolean().default(false)
+        .describe("If true, include decisions. Default false."),
+    },
+    async (args) => {
       const result = await withErrorHandling(async () => {
         const manager = StateManager.getInstance();
         const state = manager.getState();
@@ -45,6 +55,64 @@ export function registerContextTools(server: McpServer, projectRoot: string): vo
           priority: m.priority,
         }));
 
+        // Lightweight mode: return only essential info
+        if (args.lightweight) {
+          const plansSummary = Object.fromEntries(
+            Object.entries(state.plans).map(([id, p]) => [id, {
+              id: p.id,
+              title: p.title,
+              status: p.status,
+              stagingIds: p.stagings,
+            }])
+          );
+
+          const stagingsSummary = Object.fromEntries(
+            Object.entries(state.stagings).map(([id, s]) => [id, {
+              id: s.id,
+              name: s.name,
+              status: s.status,
+              planId: s.planId,
+              order: s.order,
+              taskCount: s.tasks.length,
+            }])
+          );
+
+          const tasksSummary = Object.fromEntries(
+            Object.entries(state.tasks).map(([id, t]) => [id, {
+              id: t.id,
+              title: t.title,
+              status: t.status,
+              stagingId: t.stagingId,
+              priority: t.priority,
+              hasOutput: !!t.output,
+            }])
+          );
+
+          return {
+            initialized: true,
+            version: state.version,
+            project: { name: state.project.name },
+            overview,
+            currentPlanId: state.context.currentPlanId,
+            currentStagingId: state.context.currentStagingId,
+            plans: plansSummary,
+            stagings: stagingsSummary,
+            tasks: tasksSummary,
+            appliedMemories,
+          };
+        }
+
+        // Full mode with configurable inclusions
+        const tasksData = args.includeOutputs
+          ? state.tasks
+          : Object.fromEntries(
+              Object.entries(state.tasks).map(([id, t]) => {
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                const { output, ...taskWithoutOutput } = t;
+                return [id, taskWithoutOutput];
+              })
+            );
+
         return {
           initialized: true,
           version: state.version,
@@ -54,26 +122,17 @@ export function registerContextTools(server: McpServer, projectRoot: string): vo
           currentStagingId: state.context.currentStagingId,
           plans: state.plans,
           stagings: state.stagings,
-          tasks: state.tasks,
-          recentHistory: state.history.slice(-20), // Last 20 entries
-          decisions: state.context.decisions,
-          // Auto-injected memories (general + project-summary, take precedence over CLAUDE.md)
+          tasks: tasksData,
+          ...(args.includeHistory && { recentHistory: state.history.slice(-20) }),
+          ...(args.includeDecisions && { decisions: state.context.decisions }),
           appliedMemories,
-          appliedMemoriesText: alwaysAppliedMemories.length > 0
-            ? alwaysAppliedMemories.map(m => `## [${m.category.toUpperCase()}] ${m.title}\n${m.content}`).join("\n\n")
-            : null,
         };
       }, "get_full_context");
 
       if (result.success) {
-        return {
-          content: [{ type: "text" as const, text: JSON.stringify(result.data, null, 2) }],
-        };
+        return createResponse(result.data);
       } else {
-        return {
-          content: [{ type: "text" as const, text: JSON.stringify(result.error, null, 2) }],
-          isError: true,
-        };
+        return createErrorResponse(result.error);
       }
     }
   );

@@ -33,6 +33,19 @@ The project summary is automatically included in:
 
 This means the summary acts like a dynamic CLAUDE.md that always reflects current project state.
 
+## Context Optimization
+
+**Recommended approach:**
+- Use `get_project_summary` to view current summary (minimal context)
+- Use `generate_summary` to update the summary
+- Avoid using `get_full_context` just to see the summary
+
+**Note:** `get_full_context` now supports these options to reduce context:
+- `lightweight: true` - Returns only IDs and status (~70% reduction)
+- `includeOutputs: false` - Excludes task outputs (default)
+- `includeHistory: false` - Excludes history (default)
+- `includeDecisions: false` - Excludes decisions (default)
+
 ## MCP Tools
 
 | Tool | Description |

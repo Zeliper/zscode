@@ -227,7 +227,7 @@ export interface TaskCompleteContext {
 export interface StagingStartContext {
   relatedArtifacts: RelatedStagingArtifacts[];
   appliedMemories: Memory[];
-  appliedMemoriesText: string | null;
+  // appliedMemoriesText removed to reduce context duplication
 }
 
 export type TaskContext = TaskStartContext | TaskCompleteContext;

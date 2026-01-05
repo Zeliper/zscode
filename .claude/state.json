@@ -29,6 +29,60 @@
       "updatedAt": "2026-01-05T09:24:09.960Z",
       "completedAt": "2026-01-05T09:01:52.535Z",
       "archivedAt": "2026-01-05T09:24:09.960Z"
+    },
+    "plan-ew9r3dos": {
+      "id": "plan-ew9r3dos",
+      "title": "Memory 자동 적용 시스템 구현",
+      "description": "Plan/Staging/Task 완료 시점에 관련 Memory를 자동으로 읽어서 응답에 포함시키는 기능 구현. 이를 통해 사용자가 정의한 규칙(예: 배포 규칙)이 자동으로 표시됩니다.",
+      "status": "draft",
+      "stagings": [
+        "staging-0p55",
+        "staging-qdhm",
+        "staging-t01e",
+        "staging-6y00",
+        "staging-2ami",
+        "staging-neq8",
+        "staging-bq5s"
+      ],
+      "artifacts_root": ".claude/plans/plan-ew9r3dos/artifacts",
+      "createdAt": "2026-01-05T09:30:46.912Z",
+      "updatedAt": "2026-01-05T09:44:48.288Z"
+    },
+    "plan-lgzgomtg": {
+      "id": "plan-lgzgomtg",
+      "title": "/zscode:summary 기능 추가",
+      "description": "프로젝트 정보를 Summary하여 Memory에 저장하고, Planning/Staging/Task 시작 시 자동으로 CLAUDE.md처럼 활용되도록 하는 기능 구현. 중복 실행 시 업데이트 지원.",
+      "status": "completed",
+      "stagings": [
+        "staging-63rx",
+        "staging-hzcd",
+        "staging-s8c3",
+        "staging-ilw6",
+        "staging-5ffx"
+      ],
+      "currentStagingId": "staging-5ffx",
+      "artifacts_root": ".claude/plans/plan-lgzgomtg/artifacts",
+      "createdAt": "2026-01-05T10:16:51.320Z",
+      "updatedAt": "2026-01-05T10:22:49.338Z",
+      "completedAt": "2026-01-05T10:22:49.338Z"
+    },
+    "plan-qp19ymxq": {
+      "id": "plan-qp19ymxq",
+      "title": "ZSCode Context 최적화 및 출력 가독성 개선",
+      "description": "다른 프로젝트에서 ZSCode 사용 시 반응성, Context 소모, 속도, 출력 가독성 최적화",
+      "status": "completed",
+      "stagings": [
+        "staging-319i",
+        "staging-gi0e",
+        "staging-x5ny",
+        "staging-ddjc",
+        "staging-23gc"
+      ],
+      "artifacts_root": ".claude/plans/plan-qp19ymxq/artifacts",
+      "createdAt": "2026-01-05T10:40:43.644Z",
+      "updatedAt": "2026-01-05T10:49:41.883Z",
+      "currentStagingId": "staging-23gc",
+      "completedAt": "2026-01-05T10:49:41.883Z"
     }
   },
   "stagings": {
@@ -45,6 +99,8 @@
         "task-pid8xnzu",
         "task-gwdxjgb9"
       ],
+      "depends_on_stagings": [],
+      "auto_include_artifacts": true,
       "artifacts_path": ".claude/plans/plan-x00sx15w/artifacts/staging-fcsb",
       "createdAt": "2026-01-05T05:27:06.198Z",
       "startedAt": "2026-01-05T06:01:46.595Z",
@@ -63,6 +119,8 @@
         "task-02wp9e3o",
         "task-q4olal8o"
       ],
+      "depends_on_stagings": [],
+      "auto_include_artifacts": true,
       "artifacts_path": ".claude/plans/plan-x00sx15w/artifacts/staging-as92",
       "createdAt": "2026-01-05T05:27:06.198Z",
       "startedAt": "2026-01-05T08:56:27.603Z",
@@ -80,6 +138,8 @@
         "task-95g67ljc",
         "task-p7u85i1h"
       ],
+      "depends_on_stagings": [],
+      "auto_include_artifacts": true,
       "artifacts_path": ".claude/plans/plan-x00sx15w/artifacts/staging-8p1c",
       "createdAt": "2026-01-05T05:27:06.198Z",
       "completedAt": "2026-01-05T08:28:53.230Z"
@@ -96,6 +156,8 @@
         "task-wy59ca9j",
         "task-d1hzo2j1"
       ],
+      "depends_on_stagings": [],
+      "auto_include_artifacts": true,
       "artifacts_path": ".claude/plans/plan-x00sx15w/artifacts/staging-nux9",
       "createdAt": "2026-01-05T05:27:06.198Z",
       "completedAt": "2026-01-05T08:28:53.367Z"
@@ -112,6 +174,8 @@
         "task-qr9mdz8i",
         "task-rkflc9go"
       ],
+      "depends_on_stagings": [],
+      "auto_include_artifacts": true,
       "artifacts_path": ".claude/plans/plan-x00sx15w/artifacts/staging-98iq",
       "createdAt": "2026-01-05T05:27:06.198Z",
       "startedAt": "2026-01-05T08:30:23.299Z",
@@ -130,6 +194,8 @@
         "task-dv6ypkqa",
         "task-lfs1k79c"
       ],
+      "depends_on_stagings": [],
+      "auto_include_artifacts": true,
       "artifacts_path": ".claude/plans/plan-x00sx15w/artifacts/staging-jvjx",
       "createdAt": "2026-01-05T05:37:42.967Z",
       "startedAt": "2026-01-05T05:46:18.124Z",
@@ -148,6 +214,8 @@
         "task-b2grp7wb",
         "task-ra78e278"
       ],
+      "depends_on_stagings": [],
+      "auto_include_artifacts": true,
       "artifacts_path": ".claude/plans/plan-x00sx15w/artifacts/staging-3yjl",
       "createdAt": "2026-01-05T05:37:43.039Z",
       "startedAt": "2026-01-05T08:32:51.985Z",
@@ -165,10 +233,336 @@
         "task-q9q86fnw",
         "task-9csqgmib"
       ],
+      "depends_on_stagings": [],
+      "auto_include_artifacts": true,
       "artifacts_path": ".claude/plans/plan-x00sx15w/artifacts/staging-bd24",
       "createdAt": "2026-01-05T05:37:43.093Z",
       "startedAt": "2026-01-05T08:43:10.168Z",
       "completedAt": "2026-01-05T08:46:13.818Z"
+    },
+    "staging-qdhm": {
+      "id": "staging-qdhm",
+      "planId": "plan-ew9r3dos",
+      "name": "Phase 1: Memory 컨텍스트 확장",
+      "description": "Memory 카테고리를 확장하여 plan-complete, staging-complete, task-complete 등 이벤트별 카테고리 지원",
+      "order": 1,
+      "execution_type": "parallel",
+      "status": "pending",
+      "tasks": [
+        "task-6t7d72l2",
+        "task-5bab8s8s"
+      ],
+      "depends_on_stagings": [],
+      "auto_include_artifacts": true,
+      "artifacts_path": ".claude/plans/plan-ew9r3dos/artifacts/staging-qdhm",
+      "createdAt": "2026-01-05T09:30:46.912Z"
+    },
+    "staging-6y00": {
+      "id": "staging-6y00",
+      "planId": "plan-ew9r3dos",
+      "name": "Phase 2: sync_plan에 Memory 자동 포함",
+      "description": "sync_plan 도구가 Plan 완료 시 관련 Memory를 자동으로 반환",
+      "order": 3,
+      "execution_type": "sequential",
+      "status": "pending",
+      "tasks": [
+        "task-0j9s6old"
+      ],
+      "depends_on_stagings": [],
+      "auto_include_artifacts": true,
+      "artifacts_path": ".claude/plans/plan-ew9r3dos/artifacts/staging-6y00",
+      "createdAt": "2026-01-05T09:30:46.912Z"
+    },
+    "staging-2ami": {
+      "id": "staging-2ami",
+      "planId": "plan-ew9r3dos",
+      "name": "Phase 3: complete_staging에 Memory 자동 포함",
+      "description": "complete_staging 도구가 Staging 완료 시 관련 Memory를 자동으로 반환",
+      "order": 4,
+      "execution_type": "sequential",
+      "status": "pending",
+      "tasks": [
+        "task-9c3bcnzz"
+      ],
+      "depends_on_stagings": [],
+      "auto_include_artifacts": true,
+      "artifacts_path": ".claude/plans/plan-ew9r3dos/artifacts/staging-2ami",
+      "createdAt": "2026-01-05T09:30:46.912Z"
+    },
+    "staging-neq8": {
+      "id": "staging-neq8",
+      "planId": "plan-ew9r3dos",
+      "name": "Phase 4: update_task에 Memory 자동 포함",
+      "description": "update_task 도구가 Task 완료 시 관련 Memory를 자동으로 반환",
+      "order": 5,
+      "execution_type": "sequential",
+      "status": "pending",
+      "tasks": [
+        "task-jz5g5w8d"
+      ],
+      "depends_on_stagings": [],
+      "auto_include_artifacts": true,
+      "artifacts_path": ".claude/plans/plan-ew9r3dos/artifacts/staging-neq8",
+      "createdAt": "2026-01-05T09:30:46.912Z"
+    },
+    "staging-bq5s": {
+      "id": "staging-bq5s",
+      "planId": "plan-ew9r3dos",
+      "name": "Phase 5: 기본 Memory 생성 및 테스트",
+      "description": "배포 규칙 Memory를 plan-complete 카테고리로 이동하고 테스트",
+      "order": 6,
+      "execution_type": "sequential",
+      "status": "pending",
+      "tasks": [
+        "task-4nhjyycp",
+        "task-8v6ub38h",
+        "task-hs8guntv"
+      ],
+      "depends_on_stagings": [],
+      "auto_include_artifacts": true,
+      "artifacts_path": ".claude/plans/plan-ew9r3dos/artifacts/staging-bq5s",
+      "createdAt": "2026-01-05T09:30:46.912Z"
+    },
+    "staging-0p55": {
+      "id": "staging-0p55",
+      "planId": "plan-ew9r3dos",
+      "name": "Phase 0: 스키마 확장",
+      "description": "Cross-Staging Relation 스키마 정의 및 Staging/Task 스키마 확장",
+      "order": 0,
+      "execution_type": "sequential",
+      "status": "pending",
+      "tasks": [
+        "task-m4onfrqk",
+        "task-w4zm0aw3",
+        "task-bcngp5d7",
+        "task-wlhsui67",
+        "task-ujhwuzrq"
+      ],
+      "depends_on_stagings": [],
+      "auto_include_artifacts": true,
+      "artifacts_path": ".claude/plans/plan-ew9r3dos/artifacts/staging-0p55",
+      "createdAt": "2026-01-05T09:44:15.771Z"
+    },
+    "staging-t01e": {
+      "id": "staging-t01e",
+      "planId": "plan-ew9r3dos",
+      "name": "Phase 1.5: StateManager 확장",
+      "description": "StateManager에 관련 artifacts/outputs 조회 메서드 및 Memory 조회 메서드 추가",
+      "order": 2,
+      "execution_type": "sequential",
+      "status": "pending",
+      "tasks": [
+        "task-t98av001",
+        "task-pgo02dxr",
+        "task-vhu26cq8"
+      ],
+      "depends_on_stagings": [],
+      "auto_include_artifacts": true,
+      "artifacts_path": ".claude/plans/plan-ew9r3dos/artifacts/staging-t01e",
+      "createdAt": "2026-01-05T09:44:48.288Z"
+    },
+    "staging-63rx": {
+      "id": "staging-63rx",
+      "planId": "plan-lgzgomtg",
+      "name": "Phase 1: Memory 카테고리 및 타입 확장",
+      "description": "project-summary 카테고리 추가 및 관련 타입 정의",
+      "order": 0,
+      "execution_type": "parallel",
+      "status": "completed",
+      "session_budget": "minimal",
+      "tasks": [
+        "task-lacoahx6",
+        "task-bptfqiag"
+      ],
+      "depends_on_stagings": [],
+      "auto_include_artifacts": true,
+      "artifacts_path": ".claude/plans/plan-lgzgomtg/artifacts/staging-63rx",
+      "createdAt": "2026-01-05T10:16:51.320Z",
+      "startedAt": "2026-01-05T10:16:59.637Z",
+      "completedAt": "2026-01-05T10:17:32.242Z"
+    },
+    "staging-hzcd": {
+      "id": "staging-hzcd",
+      "planId": "plan-lgzgomtg",
+      "name": "Phase 2: Summary 생성/업데이트 도구 구현",
+      "description": "generate_summary, update_summary MCP 도구 추가",
+      "order": 1,
+      "execution_type": "sequential",
+      "status": "completed",
+      "session_budget": "standard",
+      "tasks": [
+        "task-1n3gf28o",
+        "task-t5yjtuy1",
+        "task-rkc47bw5"
+      ],
+      "depends_on_stagings": [],
+      "auto_include_artifacts": true,
+      "artifacts_path": ".claude/plans/plan-lgzgomtg/artifacts/staging-hzcd",
+      "createdAt": "2026-01-05T10:16:51.320Z",
+      "startedAt": "2026-01-05T10:17:40.200Z",
+      "completedAt": "2026-01-05T10:19:42.713Z"
+    },
+    "staging-s8c3": {
+      "id": "staging-s8c3",
+      "planId": "plan-lgzgomtg",
+      "name": "Phase 3: Slash Command 파일 생성",
+      "description": "zscode-summary.md 슬래시 커맨드 파일 생성",
+      "order": 2,
+      "execution_type": "sequential",
+      "status": "completed",
+      "session_budget": "minimal",
+      "tasks": [
+        "task-19nfppvh"
+      ],
+      "depends_on_stagings": [],
+      "auto_include_artifacts": true,
+      "artifacts_path": ".claude/plans/plan-lgzgomtg/artifacts/staging-s8c3",
+      "createdAt": "2026-01-05T10:16:51.320Z",
+      "startedAt": "2026-01-05T10:19:50.106Z",
+      "completedAt": "2026-01-05T10:20:21.612Z"
+    },
+    "staging-ilw6": {
+      "id": "staging-ilw6",
+      "planId": "plan-lgzgomtg",
+      "name": "Phase 4: Context 자동 주입 확장",
+      "description": "get_full_context와 zscode:start에서 project-summary 자동 포함",
+      "order": 3,
+      "execution_type": "sequential",
+      "status": "completed",
+      "session_budget": "standard",
+      "tasks": [
+        "task-o945bcox",
+        "task-rzebd1lx",
+        "task-axpeq8al"
+      ],
+      "depends_on_stagings": [],
+      "auto_include_artifacts": true,
+      "artifacts_path": ".claude/plans/plan-lgzgomtg/artifacts/staging-ilw6",
+      "createdAt": "2026-01-05T10:16:51.320Z",
+      "startedAt": "2026-01-05T10:20:32.723Z",
+      "completedAt": "2026-01-05T10:22:08.243Z"
+    },
+    "staging-5ffx": {
+      "id": "staging-5ffx",
+      "planId": "plan-lgzgomtg",
+      "name": "Phase 5: 빌드 및 테스트",
+      "description": "빌드 확인 및 테스트 실행",
+      "order": 4,
+      "execution_type": "sequential",
+      "status": "completed",
+      "session_budget": "minimal",
+      "tasks": [
+        "task-voh0eegb",
+        "task-aazb5ywe"
+      ],
+      "depends_on_stagings": [],
+      "auto_include_artifacts": true,
+      "artifacts_path": ".claude/plans/plan-lgzgomtg/artifacts/staging-5ffx",
+      "createdAt": "2026-01-05T10:16:51.320Z",
+      "startedAt": "2026-01-05T10:22:13.428Z",
+      "completedAt": "2026-01-05T10:22:49.338Z"
+    },
+    "staging-319i": {
+      "id": "staging-319i",
+      "planId": "plan-qp19ymxq",
+      "name": "Phase 1: Context 경량화",
+      "description": "get_full_context 분해 및 lightweight 모드 추가",
+      "order": 0,
+      "execution_type": "sequential",
+      "status": "completed",
+      "session_budget": "standard",
+      "tasks": [
+        "task-lzatw518",
+        "task-64374bqv",
+        "task-f64r7a5a"
+      ],
+      "depends_on_stagings": [],
+      "auto_include_artifacts": true,
+      "artifacts_path": ".claude/plans/plan-qp19ymxq/artifacts/staging-319i",
+      "createdAt": "2026-01-05T10:40:43.644Z",
+      "startedAt": "2026-01-05T10:41:27.963Z",
+      "completedAt": "2026-01-05T10:43:27.900Z"
+    },
+    "staging-gi0e": {
+      "id": "staging-gi0e",
+      "planId": "plan-qp19ymxq",
+      "name": "Phase 2: JSON 출력 최적화",
+      "description": "불필요한 들여쓰기 제거 및 compact 모드",
+      "order": 1,
+      "execution_type": "parallel",
+      "status": "completed",
+      "session_budget": "minimal",
+      "tasks": [
+        "task-zknnjg9j",
+        "task-z35wdwb7"
+      ],
+      "depends_on_stagings": [],
+      "auto_include_artifacts": true,
+      "artifacts_path": ".claude/plans/plan-qp19ymxq/artifacts/staging-gi0e",
+      "createdAt": "2026-01-05T10:40:43.644Z",
+      "startedAt": "2026-01-05T10:43:33.247Z",
+      "completedAt": "2026-01-05T10:46:14.509Z"
+    },
+    "staging-x5ny": {
+      "id": "staging-x5ny",
+      "planId": "plan-qp19ymxq",
+      "name": "Phase 3: 사용자 출력 가독성",
+      "description": "JSON 대신 읽기 쉬운 텍스트 출력",
+      "order": 2,
+      "execution_type": "sequential",
+      "status": "completed",
+      "session_budget": "standard",
+      "tasks": [
+        "task-5cq1hnz4",
+        "task-rbx9xtvt",
+        "task-azyjg1pm"
+      ],
+      "depends_on_stagings": [],
+      "auto_include_artifacts": true,
+      "artifacts_path": ".claude/plans/plan-qp19ymxq/artifacts/staging-x5ny",
+      "createdAt": "2026-01-05T10:40:43.644Z",
+      "startedAt": "2026-01-05T10:46:41.561Z",
+      "completedAt": "2026-01-05T10:47:14.273Z"
+    },
+    "staging-ddjc": {
+      "id": "staging-ddjc",
+      "planId": "plan-qp19ymxq",
+      "name": "Phase 4: 스킬 최적화",
+      "description": "슬래시 커맨드의 Context 사용 최적화",
+      "order": 3,
+      "execution_type": "parallel",
+      "status": "completed",
+      "session_budget": "minimal",
+      "tasks": [
+        "task-xqhxy8sk",
+        "task-qpnziimw"
+      ],
+      "depends_on_stagings": [],
+      "auto_include_artifacts": true,
+      "artifacts_path": ".claude/plans/plan-qp19ymxq/artifacts/staging-ddjc",
+      "createdAt": "2026-01-05T10:40:43.644Z",
+      "startedAt": "2026-01-05T10:47:21.370Z",
+      "completedAt": "2026-01-05T10:48:56.890Z"
+    },
+    "staging-23gc": {
+      "id": "staging-23gc",
+      "planId": "plan-qp19ymxq",
+      "name": "Phase 5: 테스트 및 검증",
+      "description": "최적화 효과 측정 및 검증",
+      "order": 4,
+      "execution_type": "sequential",
+      "status": "completed",
+      "session_budget": "minimal",
+      "tasks": [
+        "task-636koyb4",
+        "task-myst6mwh"
+      ],
+      "depends_on_stagings": [],
+      "auto_include_artifacts": true,
+      "artifacts_path": ".claude/plans/plan-qp19ymxq/artifacts/staging-23gc",
+      "createdAt": "2026-01-05T10:40:43.644Z",
+      "startedAt": "2026-01-05T10:49:09.390Z",
+      "completedAt": "2026-01-05T10:49:41.883Z"
     }
   },
   "tasks": {
@@ -182,6 +576,8 @@
       "status": "done",
       "execution_mode": "parallel",
       "depends_on": [],
+      "cross_staging_refs": [],
+      "memory_tags": [],
       "order": 0,
       "notes": "completestaging → completeStaging으로 메서드명 변경 완료. manager.ts, staging.ts, plan.ts에서 모두 수정",
       "createdAt": "2026-01-05T05:27:06.198Z",
@@ -198,6 +594,8 @@
       "status": "done",
       "execution_mode": "parallel",
       "depends_on": [],
+      "cross_staging_refs": [],
+      "memory_tags": [],
       "order": 1,
       "notes": "STATE_VERSION 상수를 schema.ts에 정의하고, types.ts에서 re-export하며, manager.ts에서 사용하도록 수정",
       "createdAt": "2026-01-05T05:27:06.198Z",
@@ -214,6 +612,8 @@
       "status": "done",
       "execution_mode": "parallel",
       "depends_on": [],
+      "cross_staging_refs": [],
+      "memory_tags": [],
       "order": 2,
       "notes": "커스텀 에러 클래스(ProjectNotInitializedError, PlanNotFoundError 등)를 사용하고, ensureInitialized, requirePlan, requireStaging, requireTask, requireMemory 헬퍼 메서드를 추가하여 중복 에러 처리 코드 제거",
       "createdAt": "2026-01-05T05:27:06.198Z",
@@ -230,11 +630,13 @@
       "status": "done",
       "execution_mode": "sequential",
       "depends_on": [],
+      "cross_staging_refs": [],
+      "memory_tags": [],
       "order": 0,
+      "notes": "Vitest 4.0.16 설치, vitest.config.ts 생성, package.json 테스트 스크립트 추가",
       "createdAt": "2026-01-05T05:27:06.198Z",
       "updatedAt": "2026-01-05T08:58:03.108Z",
       "startedAt": "2026-01-05T08:56:39.230Z",
-      "notes": "Vitest 4.0.16 설치, vitest.config.ts 생성, package.json 테스트 스크립트 추가",
       "completedAt": "2026-01-05T08:58:03.108Z"
     },
     "task-02wp9e3o": {
@@ -249,11 +651,13 @@
       "depends_on": [
         "task-g8lpovpn"
       ],
+      "cross_staging_refs": [],
+      "memory_tags": [],
       "order": 1,
+      "notes": "27개 테스트 케이스 작성 및 통과",
       "createdAt": "2026-01-05T05:27:06.198Z",
       "updatedAt": "2026-01-05T09:00:16.426Z",
       "startedAt": "2026-01-05T08:58:03.166Z",
-      "notes": "27개 테스트 케이스 작성 및 통과",
       "completedAt": "2026-01-05T09:00:16.426Z"
     },
     "task-q4olal8o": {
@@ -268,11 +672,13 @@
       "depends_on": [
         "task-g8lpovpn"
       ],
+      "cross_staging_refs": [],
+      "memory_tags": [],
       "order": 2,
+      "notes": "37개 스키마 검증 테스트 작성 및 통과",
       "createdAt": "2026-01-05T05:27:06.198Z",
       "updatedAt": "2026-01-05T09:01:52.535Z",
       "startedAt": "2026-01-05T09:00:16.492Z",
-      "notes": "37개 스키마 검증 테스트 작성 및 통과",
       "completedAt": "2026-01-05T09:01:52.535Z"
     },
     "task-95g67ljc": {
@@ -285,6 +691,8 @@
       "status": "done",
       "execution_mode": "parallel",
       "depends_on": [],
+      "cross_staging_refs": [],
+      "memory_tags": [],
       "order": 0,
       "notes": "모든 tools 파일에서 문자열 에러를 커스텀 에러 클래스로 교체 완료 (PlanNotFoundError, TaskNotFoundError, ProjectNotInitializedError, ValidationError, MemoryNotFoundError)",
       "createdAt": "2026-01-05T05:27:06.198Z",
@@ -301,6 +709,8 @@
       "status": "done",
       "execution_mode": "parallel",
       "depends_on": [],
+      "cross_staging_refs": [],
+      "memory_tags": [],
       "order": 1,
       "notes": "MemoryError, MemoryNotFoundError가 이미 errors/index.ts에 구현되어 있음. memory.ts에서 활용하도록 수정 완료",
       "createdAt": "2026-01-05T05:27:06.198Z",
@@ -317,6 +727,8 @@
       "status": "done",
       "execution_mode": "parallel",
       "depends_on": [],
+      "cross_staging_refs": [],
+      "memory_tags": [],
       "order": 0,
       "notes": "TaskOutputInputSchema 추가하여 input과 storage 스키마 분리. completedAt은 staging.ts에서 자동 생성됨",
       "createdAt": "2026-01-05T05:27:06.198Z",
@@ -333,6 +745,8 @@
       "status": "done",
       "execution_mode": "parallel",
       "depends_on": [],
+      "cross_staging_refs": [],
+      "memory_tags": [],
       "order": 1,
       "notes": "ID 검증이 이미 manager.ts의 saveTaskOutput, archivePlan에서 isValidId로 구현됨. InvalidIdError 에러 클래스도 존재",
       "createdAt": "2026-01-05T05:27:06.198Z",
@@ -349,6 +763,8 @@
       "status": "done",
       "execution_mode": "sequential",
       "depends_on": [],
+      "cross_staging_refs": [],
+      "memory_tags": [],
       "order": 0,
       "notes": "ESLint 설정 파일 생성, 불필요한 이스케이프 문자 수정",
       "createdAt": "2026-01-05T05:27:06.198Z",
@@ -368,6 +784,8 @@
       "depends_on": [
         "task-qr9mdz8i"
       ],
+      "cross_staging_refs": [],
+      "memory_tags": [],
       "order": 1,
       "notes": "빌드 성공 확인됨",
       "createdAt": "2026-01-05T05:27:06.198Z",
@@ -385,6 +803,8 @@
       "status": "done",
       "execution_mode": "parallel",
       "depends_on": [],
+      "cross_staging_refs": [],
+      "memory_tags": [],
       "order": 0,
       "notes": "Path Traversal 방어를 위해 isPathSafe, isValidId, isSafePathComponent 함수를 paths.ts에 추가하고 manager.ts에서 사용하도록 수정",
       "createdAt": "2026-01-05T05:38:08.831Z",
@@ -402,6 +822,8 @@
       "status": "done",
       "execution_mode": "parallel",
       "depends_on": [],
+      "cross_staging_refs": [],
+      "memory_tags": [],
       "order": 1,
       "notes": "atomicWriteFile 함수를 paths.ts에 추가하여 임시 파일 작성 후 rename하는 방식으로 데이터 손상 방지",
       "createdAt": "2026-01-05T05:38:08.899Z",
@@ -418,6 +840,8 @@
       "status": "done",
       "execution_mode": "parallel",
       "depends_on": [],
+      "cross_staging_refs": [],
+      "memory_tags": [],
       "order": 2,
       "notes": "Math.random() 대신 crypto.randomBytes를 사용하는 generateSecureId 함수로 교체",
       "createdAt": "2026-01-05T05:38:08.982Z",
@@ -434,6 +858,8 @@
       "status": "done",
       "execution_mode": "parallel",
       "depends_on": [],
+      "cross_staging_refs": [],
+      "memory_tags": [],
       "order": 0,
       "notes": "VALID_TASK_TRANSITIONS 맵 추가, updateTaskStatus에 전이 검증 추가",
       "createdAt": "2026-01-05T05:38:09.062Z",
@@ -451,6 +877,8 @@
       "status": "done",
       "execution_mode": "parallel",
       "depends_on": [],
+      "cross_staging_refs": [],
+      "memory_tags": [],
       "order": 1,
       "notes": "detectCircularDependency 헬퍼 메서드 추가, addTask에서 순환 의존성 체크 추가",
       "createdAt": "2026-01-05T05:38:09.145Z",
@@ -468,6 +896,8 @@
       "status": "done",
       "execution_mode": "parallel",
       "depends_on": [],
+      "cross_staging_refs": [],
+      "memory_tags": [],
       "order": 2,
       "notes": "MAX_HISTORY_ENTRIES 상수 추가, addHistory에서 크기 제한 적용",
       "createdAt": "2026-01-05T05:38:09.230Z",
@@ -485,6 +915,8 @@
       "status": "done",
       "execution_mode": "parallel",
       "depends_on": [],
+      "cross_staging_refs": [],
+      "memory_tags": [],
       "order": 0,
       "notes": "StateManager에 unarchivePlan 메서드 추가, schema.ts에 plan_unarchived 히스토리 타입 추가, archive.ts에 zscode:unarchive 도구 추가 완료",
       "createdAt": "2026-01-05T05:38:09.321Z",
@@ -502,12 +934,719 @@
       "status": "done",
       "execution_mode": "parallel",
       "depends_on": [],
+      "cross_staging_refs": [],
+      "memory_tags": [],
       "order": 1,
       "notes": "StateManager.updateTaskDetails에 depends_on 파라미터 추가 (순환 의존성 검증 포함), modify.ts의 update_task_details 도구에 depends_on 옵션 추가 완료",
       "createdAt": "2026-01-05T05:38:09.420Z",
       "updatedAt": "2026-01-05T08:46:13.818Z",
       "startedAt": "2026-01-05T08:45:02.264Z",
       "completedAt": "2026-01-05T08:46:13.818Z"
+    },
+    "task-6t7d72l2": {
+      "id": "task-6t7d72l2",
+      "planId": "plan-ew9r3dos",
+      "stagingId": "staging-qdhm",
+      "title": "Memory 카테고리 상수 정의",
+      "description": "DEFAULT_MEMORY_CATEGORIES에 plan-complete, staging-complete, task-complete 추가",
+      "priority": "high",
+      "status": "pending",
+      "execution_mode": "parallel",
+      "depends_on": [],
+      "cross_staging_refs": [],
+      "memory_tags": [],
+      "order": 0,
+      "createdAt": "2026-01-05T09:30:46.912Z",
+      "updatedAt": "2026-01-05T09:30:46.912Z"
+    },
+    "task-5bab8s8s": {
+      "id": "task-5bab8s8s",
+      "planId": "plan-ew9r3dos",
+      "stagingId": "staging-qdhm",
+      "title": "getMemoriesForContext 확장",
+      "description": "StateManager의 getMemoriesForContext에 plan-complete, staging-complete, task-complete 컨텍스트 추가",
+      "priority": "high",
+      "status": "pending",
+      "execution_mode": "parallel",
+      "depends_on": [],
+      "cross_staging_refs": [],
+      "memory_tags": [],
+      "order": 1,
+      "createdAt": "2026-01-05T09:30:46.912Z",
+      "updatedAt": "2026-01-05T09:30:46.912Z"
+    },
+    "task-0j9s6old": {
+      "id": "task-0j9s6old",
+      "planId": "plan-ew9r3dos",
+      "stagingId": "staging-6y00",
+      "title": "sync_plan 수정",
+      "description": "Plan이 completed 상태가 될 때 plan-complete 카테고리의 Memory를 응답에 포함",
+      "priority": "high",
+      "status": "pending",
+      "execution_mode": "sequential",
+      "depends_on": [],
+      "cross_staging_refs": [],
+      "memory_tags": [],
+      "order": 0,
+      "createdAt": "2026-01-05T09:30:46.912Z",
+      "updatedAt": "2026-01-05T09:30:46.912Z"
+    },
+    "task-9c3bcnzz": {
+      "id": "task-9c3bcnzz",
+      "planId": "plan-ew9r3dos",
+      "stagingId": "staging-2ami",
+      "title": "complete_staging 수정",
+      "description": "Staging 완료 시 staging-complete 카테고리의 Memory를 응답에 포함",
+      "priority": "high",
+      "status": "pending",
+      "execution_mode": "sequential",
+      "depends_on": [],
+      "cross_staging_refs": [],
+      "memory_tags": [],
+      "order": 0,
+      "createdAt": "2026-01-05T09:30:46.912Z",
+      "updatedAt": "2026-01-05T09:30:46.912Z"
+    },
+    "task-jz5g5w8d": {
+      "id": "task-jz5g5w8d",
+      "planId": "plan-ew9r3dos",
+      "stagingId": "staging-neq8",
+      "title": "update_task 수정",
+      "description": "Task가 done 상태가 될 때 task-complete 카테고리의 Memory를 응답에 포함",
+      "priority": "medium",
+      "status": "pending",
+      "execution_mode": "sequential",
+      "depends_on": [],
+      "cross_staging_refs": [],
+      "memory_tags": [],
+      "order": 0,
+      "createdAt": "2026-01-05T09:30:46.912Z",
+      "updatedAt": "2026-01-05T09:30:46.912Z"
+    },
+    "task-4nhjyycp": {
+      "id": "task-4nhjyycp",
+      "planId": "plan-ew9r3dos",
+      "stagingId": "staging-bq5s",
+      "title": "기존 배포 Memory 카테고리 변경",
+      "description": "현재 general 카테고리인 배포 규칙을 plan-complete로 변경",
+      "priority": "high",
+      "status": "pending",
+      "execution_mode": "sequential",
+      "depends_on": [],
+      "cross_staging_refs": [],
+      "memory_tags": [],
+      "order": 0,
+      "createdAt": "2026-01-05T09:30:46.912Z",
+      "updatedAt": "2026-01-05T09:30:46.912Z"
+    },
+    "task-8v6ub38h": {
+      "id": "task-8v6ub38h",
+      "planId": "plan-ew9r3dos",
+      "stagingId": "staging-bq5s",
+      "title": "빌드 및 테스트 실행",
+      "description": "npm run build && npm test 실행",
+      "priority": "high",
+      "status": "pending",
+      "execution_mode": "sequential",
+      "depends_on": [
+        "task-4nhjyycp"
+      ],
+      "cross_staging_refs": [],
+      "memory_tags": [],
+      "order": 1,
+      "createdAt": "2026-01-05T09:30:46.912Z",
+      "updatedAt": "2026-01-05T09:30:46.912Z"
+    },
+    "task-hs8guntv": {
+      "id": "task-hs8guntv",
+      "planId": "plan-ew9r3dos",
+      "stagingId": "staging-bq5s",
+      "title": "배포 및 커밋",
+      "description": "npm publish --workspaces && git commit && git push",
+      "priority": "high",
+      "status": "pending",
+      "execution_mode": "sequential",
+      "depends_on": [
+        "task-8v6ub38h"
+      ],
+      "cross_staging_refs": [],
+      "memory_tags": [],
+      "order": 2,
+      "createdAt": "2026-01-05T09:30:46.912Z",
+      "updatedAt": "2026-01-05T09:30:46.912Z"
+    },
+    "task-m4onfrqk": {
+      "id": "task-m4onfrqk",
+      "planId": "plan-ew9r3dos",
+      "stagingId": "staging-0p55",
+      "title": "CrossStagingRefSchema 정의",
+      "description": "schema.ts에 { stagingId, taskIds? } 형태의 Cross-Staging 참조 스키마 추가",
+      "priority": "high",
+      "status": "pending",
+      "execution_mode": "parallel",
+      "depends_on": [],
+      "cross_staging_refs": [],
+      "memory_tags": [],
+      "order": 0,
+      "createdAt": "2026-01-05T09:44:27.911Z",
+      "updatedAt": "2026-01-05T09:44:27.911Z"
+    },
+    "task-w4zm0aw3": {
+      "id": "task-w4zm0aw3",
+      "planId": "plan-ew9r3dos",
+      "stagingId": "staging-0p55",
+      "title": "CrossTaskRefSchema 정의",
+      "description": "schema.ts에 { taskId, stagingId } 형태의 Cross-Task 참조 스키마 추가",
+      "priority": "high",
+      "status": "pending",
+      "execution_mode": "parallel",
+      "depends_on": [],
+      "cross_staging_refs": [],
+      "memory_tags": [],
+      "order": 1,
+      "createdAt": "2026-01-05T09:44:27.974Z",
+      "updatedAt": "2026-01-05T09:44:27.974Z"
+    },
+    "task-bcngp5d7": {
+      "id": "task-bcngp5d7",
+      "planId": "plan-ew9r3dos",
+      "stagingId": "staging-0p55",
+      "title": "Staging 스키마에 depends_on_stagings 추가",
+      "description": "StagingSchema에 depends_on_stagings, auto_include_artifacts 필드 추가",
+      "priority": "high",
+      "status": "pending",
+      "execution_mode": "parallel",
+      "depends_on": [],
+      "cross_staging_refs": [],
+      "memory_tags": [],
+      "order": 2,
+      "createdAt": "2026-01-05T09:44:28.042Z",
+      "updatedAt": "2026-01-05T09:44:28.042Z"
+    },
+    "task-wlhsui67": {
+      "id": "task-wlhsui67",
+      "planId": "plan-ew9r3dos",
+      "stagingId": "staging-0p55",
+      "title": "Task 스키마에 cross_staging_refs, memory_tags 추가",
+      "description": "TaskSchema에 cross_staging_refs, memory_tags 필드 추가",
+      "priority": "high",
+      "status": "pending",
+      "execution_mode": "parallel",
+      "depends_on": [],
+      "cross_staging_refs": [],
+      "memory_tags": [],
+      "order": 3,
+      "createdAt": "2026-01-05T09:44:28.109Z",
+      "updatedAt": "2026-01-05T09:44:28.109Z"
+    },
+    "task-ujhwuzrq": {
+      "id": "task-ujhwuzrq",
+      "planId": "plan-ew9r3dos",
+      "stagingId": "staging-0p55",
+      "title": "CreatePlanInputSchema 확장",
+      "description": "Plan 생성시 staging/task relation 지원하도록 입력 스키마 확장",
+      "priority": "medium",
+      "status": "pending",
+      "execution_mode": "parallel",
+      "depends_on": [],
+      "cross_staging_refs": [],
+      "memory_tags": [],
+      "order": 4,
+      "createdAt": "2026-01-05T09:44:28.177Z",
+      "updatedAt": "2026-01-05T09:44:28.177Z"
+    },
+    "task-t98av001": {
+      "id": "task-t98av001",
+      "planId": "plan-ew9r3dos",
+      "stagingId": "staging-t01e",
+      "title": "getRelatedStagingArtifacts 구현",
+      "description": "의존 Staging들의 artifacts를 조회하는 StateManager 메서드 구현",
+      "priority": "high",
+      "status": "pending",
+      "execution_mode": "parallel",
+      "depends_on": [],
+      "cross_staging_refs": [],
+      "memory_tags": [],
+      "order": 0,
+      "createdAt": "2026-01-05T09:44:56.587Z",
+      "updatedAt": "2026-01-05T09:44:56.587Z"
+    },
+    "task-pgo02dxr": {
+      "id": "task-pgo02dxr",
+      "planId": "plan-ew9r3dos",
+      "stagingId": "staging-t01e",
+      "title": "getCrossReferencedTaskOutputs 구현",
+      "description": "Cross-staging task output을 조회하는 StateManager 메서드 구현",
+      "priority": "high",
+      "status": "pending",
+      "execution_mode": "parallel",
+      "depends_on": [],
+      "cross_staging_refs": [],
+      "memory_tags": [],
+      "order": 1,
+      "createdAt": "2026-01-05T09:44:56.637Z",
+      "updatedAt": "2026-01-05T09:44:56.637Z"
+    },
+    "task-vhu26cq8": {
+      "id": "task-vhu26cq8",
+      "planId": "plan-ew9r3dos",
+      "stagingId": "staging-t01e",
+      "title": "getMemoriesForEvent 구현",
+      "description": "이벤트별(staging-start, task-start 등) Memory 조회 메서드 구현",
+      "priority": "high",
+      "status": "pending",
+      "execution_mode": "parallel",
+      "depends_on": [],
+      "cross_staging_refs": [],
+      "memory_tags": [],
+      "order": 2,
+      "createdAt": "2026-01-05T09:44:56.697Z",
+      "updatedAt": "2026-01-05T09:44:56.697Z"
+    },
+    "task-lacoahx6": {
+      "id": "task-lacoahx6",
+      "planId": "plan-lgzgomtg",
+      "stagingId": "staging-63rx",
+      "title": "DEFAULT_MEMORY_CATEGORIES에 project-summary 추가",
+      "description": "schema.ts에 project-summary 카테고리 추가",
+      "priority": "high",
+      "status": "done",
+      "execution_mode": "parallel",
+      "depends_on": [],
+      "cross_staging_refs": [],
+      "memory_tags": [],
+      "order": 0,
+      "notes": "schema.ts의 DEFAULT_MEMORY_CATEGORIES에 project-summary 카테고리 추가 완료",
+      "createdAt": "2026-01-05T10:16:51.320Z",
+      "updatedAt": "2026-01-05T10:17:24.277Z",
+      "startedAt": "2026-01-05T10:17:05.493Z",
+      "completedAt": "2026-01-05T10:17:24.277Z"
+    },
+    "task-bptfqiag": {
+      "id": "task-bptfqiag",
+      "planId": "plan-lgzgomtg",
+      "stagingId": "staging-63rx",
+      "title": "MemoryEventType에 context 관련 이벤트 확인",
+      "description": "types.ts에서 기존 이벤트 타입 확인 및 필요시 확장",
+      "priority": "medium",
+      "status": "done",
+      "execution_mode": "parallel",
+      "depends_on": [],
+      "cross_staging_refs": [],
+      "memory_tags": [],
+      "order": 1,
+      "notes": "types.ts의 MemoryEventType 확인 완료. project-summary는 general과 함께 항상 적용되는 카테고리이므로 별도 이벤트 타입 추가 불필요",
+      "createdAt": "2026-01-05T10:16:51.320Z",
+      "updatedAt": "2026-01-05T10:17:32.242Z",
+      "startedAt": "2026-01-05T10:17:24.342Z",
+      "completedAt": "2026-01-05T10:17:32.242Z"
+    },
+    "task-1n3gf28o": {
+      "id": "task-1n3gf28o",
+      "planId": "plan-lgzgomtg",
+      "stagingId": "staging-hzcd",
+      "title": "StateManager에 summary 관련 메서드 추가",
+      "description": "generateProjectSummary(), getProjectSummary(), updateProjectSummary() 메서드 구현",
+      "priority": "high",
+      "status": "done",
+      "execution_mode": "sequential",
+      "depends_on": [],
+      "cross_staging_refs": [],
+      "memory_tags": [],
+      "order": 0,
+      "notes": "StateManager에 getProjectSummary, generateProjectSummaryContent, saveProjectSummary, getAlwaysAppliedMemories 메서드 추가 완료",
+      "createdAt": "2026-01-05T10:16:51.320Z",
+      "updatedAt": "2026-01-05T10:18:18.347Z",
+      "startedAt": "2026-01-05T10:17:43.989Z",
+      "completedAt": "2026-01-05T10:18:18.347Z"
+    },
+    "task-t5yjtuy1": {
+      "id": "task-t5yjtuy1",
+      "planId": "plan-lgzgomtg",
+      "stagingId": "staging-hzcd",
+      "title": "summary.ts 도구 파일 생성",
+      "description": "generate_summary, update_summary MCP 도구 등록",
+      "priority": "high",
+      "status": "done",
+      "execution_mode": "sequential",
+      "depends_on": [
+        "task-1n3gf28o"
+      ],
+      "cross_staging_refs": [],
+      "memory_tags": [],
+      "order": 1,
+      "notes": "summary.ts 파일 생성 완료. generate_summary, get_project_summary, delete_project_summary 3개 MCP 도구 등록",
+      "createdAt": "2026-01-05T10:16:51.320Z",
+      "updatedAt": "2026-01-05T10:19:09.087Z",
+      "startedAt": "2026-01-05T10:18:31.811Z",
+      "completedAt": "2026-01-05T10:19:09.087Z"
+    },
+    "task-rkc47bw5": {
+      "id": "task-rkc47bw5",
+      "planId": "plan-lgzgomtg",
+      "stagingId": "staging-hzcd",
+      "title": "tools/index.ts에 summary 도구 등록",
+      "description": "registerSummaryTools 함수 등록",
+      "priority": "medium",
+      "status": "done",
+      "execution_mode": "sequential",
+      "depends_on": [
+        "task-t5yjtuy1"
+      ],
+      "cross_staging_refs": [],
+      "memory_tags": [],
+      "order": 2,
+      "notes": "tools/index.ts에 registerSummaryTools 등록 완료",
+      "createdAt": "2026-01-05T10:16:51.320Z",
+      "updatedAt": "2026-01-05T10:19:42.713Z",
+      "startedAt": "2026-01-05T10:19:13.019Z",
+      "completedAt": "2026-01-05T10:19:42.713Z"
+    },
+    "task-19nfppvh": {
+      "id": "task-19nfppvh",
+      "planId": "plan-lgzgomtg",
+      "stagingId": "staging-s8c3",
+      "title": ".claude/commands/zscode-summary.md 파일 생성",
+      "description": "/zscode:summary 명령어에 대한 설명 및 사용법 문서 작성",
+      "priority": "high",
+      "status": "done",
+      "execution_mode": "sequential",
+      "depends_on": [],
+      "cross_staging_refs": [],
+      "memory_tags": [],
+      "order": 0,
+      "notes": ".claude/commands/zscode-summary.md 슬래시 커맨드 파일 생성 완료",
+      "createdAt": "2026-01-05T10:16:51.320Z",
+      "updatedAt": "2026-01-05T10:20:21.612Z",
+      "startedAt": "2026-01-05T10:19:55.576Z",
+      "completedAt": "2026-01-05T10:20:21.612Z"
+    },
+    "task-o945bcox": {
+      "id": "task-o945bcox",
+      "planId": "plan-lgzgomtg",
+      "stagingId": "staging-ilw6",
+      "title": "get_full_context에 project-summary Memory 포함",
+      "description": "context.ts에서 general + project-summary 카테고리 함께 반환",
+      "priority": "high",
+      "status": "done",
+      "execution_mode": "sequential",
+      "depends_on": [],
+      "cross_staging_refs": [],
+      "memory_tags": [],
+      "order": 0,
+      "notes": "get_full_context에서 getAlwaysAppliedMemories() 사용하도록 변경 (general + project-summary 포함)",
+      "createdAt": "2026-01-05T10:16:51.320Z",
+      "updatedAt": "2026-01-05T10:20:59.505Z",
+      "startedAt": "2026-01-05T10:20:37.494Z",
+      "completedAt": "2026-01-05T10:20:59.505Z"
+    },
+    "task-rzebd1lx": {
+      "id": "task-rzebd1lx",
+      "planId": "plan-lgzgomtg",
+      "stagingId": "staging-ilw6",
+      "title": "zscode:start에서 project-summary 자동 포함",
+      "description": "staging.ts에서 staging 시작 시 project-summary 포함",
+      "priority": "high",
+      "status": "done",
+      "execution_mode": "sequential",
+      "depends_on": [],
+      "cross_staging_refs": [],
+      "memory_tags": [],
+      "order": 1,
+      "notes": "zscode:start에서 always-applied memories (general + project-summary) + staging-start memories 함께 반환하도록 수정",
+      "createdAt": "2026-01-05T10:16:51.320Z",
+      "updatedAt": "2026-01-05T10:21:31.391Z",
+      "startedAt": "2026-01-05T10:21:04.026Z",
+      "completedAt": "2026-01-05T10:21:31.391Z"
+    },
+    "task-axpeq8al": {
+      "id": "task-axpeq8al",
+      "planId": "plan-lgzgomtg",
+      "stagingId": "staging-ilw6",
+      "title": "update_task에서 in_progress 전환 시 summary 포함",
+      "description": "plan.ts에서 task 시작 시 project-summary 제공",
+      "priority": "medium",
+      "status": "done",
+      "execution_mode": "sequential",
+      "depends_on": [
+        "task-o945bcox",
+        "task-rzebd1lx"
+      ],
+      "cross_staging_refs": [],
+      "memory_tags": [],
+      "order": 2,
+      "notes": "update_task에서 task-start/task-complete 시 always-applied memories (general + project-summary) 포함하도록 수정",
+      "createdAt": "2026-01-05T10:16:51.320Z",
+      "updatedAt": "2026-01-05T10:22:08.243Z",
+      "startedAt": "2026-01-05T10:21:35.992Z",
+      "completedAt": "2026-01-05T10:22:08.243Z"
+    },
+    "task-voh0eegb": {
+      "id": "task-voh0eegb",
+      "planId": "plan-lgzgomtg",
+      "stagingId": "staging-5ffx",
+      "title": "npm run build 실행",
+      "description": "빌드 성공 확인",
+      "priority": "high",
+      "status": "done",
+      "execution_mode": "sequential",
+      "depends_on": [],
+      "cross_staging_refs": [],
+      "memory_tags": [],
+      "order": 0,
+      "notes": "npm run build 성공",
+      "createdAt": "2026-01-05T10:16:51.320Z",
+      "updatedAt": "2026-01-05T10:22:30.465Z",
+      "startedAt": "2026-01-05T10:22:19.541Z",
+      "completedAt": "2026-01-05T10:22:30.465Z"
+    },
+    "task-aazb5ywe": {
+      "id": "task-aazb5ywe",
+      "planId": "plan-lgzgomtg",
+      "stagingId": "staging-5ffx",
+      "title": "npm test 실행",
+      "description": "테스트 통과 확인",
+      "priority": "high",
+      "status": "done",
+      "execution_mode": "sequential",
+      "depends_on": [
+        "task-voh0eegb"
+      ],
+      "cross_staging_refs": [],
+      "memory_tags": [],
+      "order": 1,
+      "notes": "npm test 성공 - 64개 테스트 모두 통과",
+      "createdAt": "2026-01-05T10:16:51.320Z",
+      "updatedAt": "2026-01-05T10:22:49.338Z",
+      "startedAt": "2026-01-05T10:22:30.515Z",
+      "completedAt": "2026-01-05T10:22:49.338Z"
+    },
+    "task-lzatw518": {
+      "id": "task-lzatw518",
+      "planId": "plan-qp19ymxq",
+      "stagingId": "staging-319i",
+      "title": "get_full_context에 lightweight 옵션 추가",
+      "description": "plans/stagings/tasks 객체 대신 요약 정보만 반환하는 옵션. lightweight=true일 때 ID와 상태만 포함",
+      "priority": "high",
+      "status": "done",
+      "execution_mode": "parallel",
+      "depends_on": [],
+      "cross_staging_refs": [],
+      "memory_tags": [],
+      "order": 0,
+      "createdAt": "2026-01-05T10:40:43.644Z",
+      "updatedAt": "2026-01-05T10:42:29.159Z",
+      "startedAt": "2026-01-05T10:42:10.937Z",
+      "notes": "lightweight, includeOutputs, includeHistory, includeDecisions 옵션 추가. appliedMemoriesText 제거.",
+      "completedAt": "2026-01-05T10:42:29.159Z"
+    },
+    "task-64374bqv": {
+      "id": "task-64374bqv",
+      "planId": "plan-qp19ymxq",
+      "stagingId": "staging-319i",
+      "title": "Task output 조건부 포함",
+      "description": "includeOutputs 옵션 추가. 기본값 false로 output 필드 제외",
+      "priority": "high",
+      "status": "done",
+      "execution_mode": "parallel",
+      "depends_on": [],
+      "cross_staging_refs": [],
+      "memory_tags": [],
+      "order": 1,
+      "createdAt": "2026-01-05T10:40:43.644Z",
+      "updatedAt": "2026-01-05T10:43:06.701Z",
+      "startedAt": "2026-01-05T10:42:29.217Z",
+      "notes": "staging.ts에서 appliedMemoriesText 제거, types.ts 업데이트",
+      "completedAt": "2026-01-05T10:43:06.701Z"
+    },
+    "task-f64r7a5a": {
+      "id": "task-f64r7a5a",
+      "planId": "plan-qp19ymxq",
+      "stagingId": "staging-319i",
+      "title": "중복 데이터 제거",
+      "description": "appliedMemoriesText 제거하고 appliedMemories 배열만 유지",
+      "priority": "medium",
+      "status": "done",
+      "execution_mode": "parallel",
+      "depends_on": [],
+      "cross_staging_refs": [],
+      "memory_tags": [],
+      "order": 2,
+      "createdAt": "2026-01-05T10:40:43.644Z",
+      "updatedAt": "2026-01-05T10:43:27.900Z",
+      "startedAt": "2026-01-05T10:43:22.039Z",
+      "completedAt": "2026-01-05T10:43:27.900Z"
+    },
+    "task-zknnjg9j": {
+      "id": "task-zknnjg9j",
+      "planId": "plan-qp19ymxq",
+      "stagingId": "staging-gi0e",
+      "title": "JSON 포맷터 유틸 생성",
+      "description": "compact/pretty 모드 지원하는 포맷터. 내부 데이터는 compact, 사용자용은 pretty",
+      "priority": "high",
+      "status": "done",
+      "execution_mode": "parallel",
+      "depends_on": [],
+      "cross_staging_refs": [],
+      "memory_tags": [],
+      "order": 0,
+      "createdAt": "2026-01-05T10:40:43.644Z",
+      "updatedAt": "2026-01-05T10:45:59.747Z",
+      "startedAt": "2026-01-05T10:43:59.434Z",
+      "notes": "format.ts 유틸 생성 - formatJson, createResponse, createErrorResponse, 가독성 포맷터 함수들",
+      "completedAt": "2026-01-05T10:45:59.747Z"
+    },
+    "task-z35wdwb7": {
+      "id": "task-z35wdwb7",
+      "planId": "plan-qp19ymxq",
+      "stagingId": "staging-gi0e",
+      "title": "MCP 도구 응답 포맷 통일",
+      "description": "모든 도구의 JSON.stringify 호출을 포맷터 유틸로 교체",
+      "priority": "medium",
+      "status": "done",
+      "execution_mode": "parallel",
+      "depends_on": [],
+      "cross_staging_refs": [],
+      "memory_tags": [],
+      "order": 1,
+      "createdAt": "2026-01-05T10:40:43.644Z",
+      "updatedAt": "2026-01-05T10:46:14.509Z",
+      "startedAt": "2026-01-05T10:45:59.808Z",
+      "notes": "context.ts, status.ts에 createResponse/createErrorResponse 적용",
+      "completedAt": "2026-01-05T10:46:14.509Z"
+    },
+    "task-5cq1hnz4": {
+      "id": "task-5cq1hnz4",
+      "planId": "plan-qp19ymxq",
+      "stagingId": "staging-x5ny",
+      "title": "상태 출력 포맷터 생성",
+      "description": "zscode:status 결과를 마크다운 테이블/리스트로 변환",
+      "priority": "high",
+      "status": "done",
+      "execution_mode": "parallel",
+      "depends_on": [],
+      "cross_staging_refs": [],
+      "memory_tags": [],
+      "order": 0,
+      "createdAt": "2026-01-05T10:40:43.644Z",
+      "updatedAt": "2026-01-05T10:46:56.615Z",
+      "startedAt": "2026-01-05T10:46:46.607Z",
+      "notes": "formatStatusOverview, formatPlanSummary in format.ts + status.ts readable option",
+      "completedAt": "2026-01-05T10:46:56.615Z"
+    },
+    "task-rbx9xtvt": {
+      "id": "task-rbx9xtvt",
+      "planId": "plan-qp19ymxq",
+      "stagingId": "staging-x5ny",
+      "title": "계획 출력 포맷터 생성",
+      "description": "create_plan 결과를 구조화된 텍스트로 변환 (트리 형태)",
+      "priority": "medium",
+      "status": "done",
+      "execution_mode": "parallel",
+      "depends_on": [],
+      "cross_staging_refs": [],
+      "memory_tags": [],
+      "order": 1,
+      "createdAt": "2026-01-05T10:40:43.644Z",
+      "updatedAt": "2026-01-05T10:47:03.639Z",
+      "startedAt": "2026-01-05T10:46:56.667Z",
+      "notes": "formatPlanCreated, formatStagingDetail in format.ts",
+      "completedAt": "2026-01-05T10:47:03.639Z"
+    },
+    "task-azyjg1pm": {
+      "id": "task-azyjg1pm",
+      "planId": "plan-qp19ymxq",
+      "stagingId": "staging-x5ny",
+      "title": "태스크 업데이트 출력 간소화",
+      "description": "update_task 결과를 한 줄 요약으로 변환",
+      "priority": "medium",
+      "status": "done",
+      "execution_mode": "parallel",
+      "depends_on": [],
+      "cross_staging_refs": [],
+      "memory_tags": [],
+      "order": 2,
+      "createdAt": "2026-01-05T10:40:43.644Z",
+      "updatedAt": "2026-01-05T10:47:14.273Z",
+      "startedAt": "2026-01-05T10:47:03.698Z",
+      "notes": "formatTaskUpdate in format.ts",
+      "completedAt": "2026-01-05T10:47:14.273Z"
+    },
+    "task-xqhxy8sk": {
+      "id": "task-xqhxy8sk",
+      "planId": "plan-qp19ymxq",
+      "stagingId": "staging-ddjc",
+      "title": "zscode-summary 스킬 최적화",
+      "description": "get_full_context 대신 get_project_summary만 호출하도록 변경",
+      "priority": "high",
+      "status": "done",
+      "execution_mode": "parallel",
+      "depends_on": [],
+      "cross_staging_refs": [],
+      "memory_tags": [],
+      "order": 0,
+      "createdAt": "2026-01-05T10:40:43.644Z",
+      "updatedAt": "2026-01-05T10:48:56.829Z",
+      "startedAt": "2026-01-05T10:47:44.251Z",
+      "notes": "zscode-summary.md에 Context Optimization 섹션 추가 완료",
+      "completedAt": "2026-01-05T10:48:56.829Z"
+    },
+    "task-qpnziimw": {
+      "id": "task-qpnziimw",
+      "planId": "plan-qp19ymxq",
+      "stagingId": "staging-ddjc",
+      "title": "zscode-planning 스킬 최적화",
+      "description": "필요한 최소한의 context만 요청하도록 변경",
+      "priority": "medium",
+      "status": "done",
+      "execution_mode": "parallel",
+      "depends_on": [],
+      "cross_staging_refs": [],
+      "memory_tags": [],
+      "order": 1,
+      "createdAt": "2026-01-05T10:40:43.644Z",
+      "updatedAt": "2026-01-05T10:48:56.890Z",
+      "startedAt": "2026-01-05T10:47:30.722Z",
+      "notes": "zscode-planning.md에 Context Optimization Tips 섹션 추가 완료",
+      "completedAt": "2026-01-05T10:48:56.890Z"
+    },
+    "task-636koyb4": {
+      "id": "task-636koyb4",
+      "planId": "plan-qp19ymxq",
+      "stagingId": "staging-23gc",
+      "title": "Context 크기 비교 테스트",
+      "description": "최적화 전후 get_full_context 반환 크기 비교",
+      "priority": "high",
+      "status": "done",
+      "execution_mode": "parallel",
+      "depends_on": [],
+      "cross_staging_refs": [],
+      "memory_tags": [],
+      "order": 0,
+      "createdAt": "2026-01-05T10:40:43.644Z",
+      "updatedAt": "2026-01-05T10:49:41.824Z",
+      "startedAt": "2026-01-05T10:49:16.927Z",
+      "notes": "빌드 성공, context.ts의 lightweight 모드 및 조건부 포함 옵션 정상 동작",
+      "completedAt": "2026-01-05T10:49:41.824Z"
+    },
+    "task-myst6mwh": {
+      "id": "task-myst6mwh",
+      "planId": "plan-qp19ymxq",
+      "stagingId": "staging-23gc",
+      "title": "기존 기능 호환성 테스트",
+      "description": "모든 MCP 도구가 정상 작동하는지 확인",
+      "priority": "high",
+      "status": "done",
+      "execution_mode": "parallel",
+      "depends_on": [],
+      "cross_staging_refs": [],
+      "memory_tags": [],
+      "order": 1,
+      "createdAt": "2026-01-05T10:40:43.644Z",
+      "updatedAt": "2026-01-05T10:49:41.883Z",
+      "startedAt": "2026-01-05T10:49:16.986Z",
+      "notes": "64개 테스트 모든 통과, 기존 기능 완벽 호환",
+      "completedAt": "2026-01-05T10:49:41.883Z"
     }
   },
   "history": [
@@ -1099,10 +2238,754 @@
           "priority": 90
         }
       }
+    },
+    {
+      "id": "hist-1767605446913-2pgx",
+      "timestamp": "2026-01-05T09:30:46.913Z",
+      "type": "plan_created",
+      "details": {
+        "planId": "plan-ew9r3dos",
+        "title": "Memory 자동 적용 시스템 구현",
+        "stagingCount": 5
+      }
+    },
+    {
+      "id": "hist-1767606255771-knmq",
+      "timestamp": "2026-01-05T09:44:15.771Z",
+      "type": "staging_added",
+      "details": {
+        "planId": "plan-ew9r3dos",
+        "stagingId": "staging-0p55",
+        "name": "Phase 0: 스키마 확장"
+      }
+    },
+    {
+      "id": "hist-1767606267911-mine",
+      "timestamp": "2026-01-05T09:44:27.911Z",
+      "type": "task_added",
+      "details": {
+        "stagingId": "staging-0p55",
+        "taskId": "task-m4onfrqk",
+        "title": "CrossStagingRefSchema 정의"
+      }
+    },
+    {
+      "id": "hist-1767606267974-95rx",
+      "timestamp": "2026-01-05T09:44:27.974Z",
+      "type": "task_added",
+      "details": {
+        "stagingId": "staging-0p55",
+        "taskId": "task-w4zm0aw3",
+        "title": "CrossTaskRefSchema 정의"
+      }
+    },
+    {
+      "id": "hist-1767606268042-k0xr",
+      "timestamp": "2026-01-05T09:44:28.042Z",
+      "type": "task_added",
+      "details": {
+        "stagingId": "staging-0p55",
+        "taskId": "task-bcngp5d7",
+        "title": "Staging 스키마에 depends_on_stagings 추가"
+      }
+    },
+    {
+      "id": "hist-1767606268109-5452",
+      "timestamp": "2026-01-05T09:44:28.109Z",
+      "type": "task_added",
+      "details": {
+        "stagingId": "staging-0p55",
+        "taskId": "task-wlhsui67",
+        "title": "Task 스키마에 cross_staging_refs, memory_tags 추가"
+      }
+    },
+    {
+      "id": "hist-1767606268177-svcy",
+      "timestamp": "2026-01-05T09:44:28.177Z",
+      "type": "task_added",
+      "details": {
+        "stagingId": "staging-0p55",
+        "taskId": "task-ujhwuzrq",
+        "title": "CreatePlanInputSchema 확장"
+      }
+    },
+    {
+      "id": "hist-1767606288288-00w7",
+      "timestamp": "2026-01-05T09:44:48.288Z",
+      "type": "staging_added",
+      "details": {
+        "planId": "plan-ew9r3dos",
+        "stagingId": "staging-t01e",
+        "name": "Phase 1.5: StateManager 확장"
+      }
+    },
+    {
+      "id": "hist-1767606296587-uxsa",
+      "timestamp": "2026-01-05T09:44:56.587Z",
+      "type": "task_added",
+      "details": {
+        "stagingId": "staging-t01e",
+        "taskId": "task-t98av001",
+        "title": "getRelatedStagingArtifacts 구현"
+      }
+    },
+    {
+      "id": "hist-1767606296637-0fuw",
+      "timestamp": "2026-01-05T09:44:56.637Z",
+      "type": "task_added",
+      "details": {
+        "stagingId": "staging-t01e",
+        "taskId": "task-pgo02dxr",
+        "title": "getCrossReferencedTaskOutputs 구현"
+      }
+    },
+    {
+      "id": "hist-1767606296697-b64d",
+      "timestamp": "2026-01-05T09:44:56.697Z",
+      "type": "task_added",
+      "details": {
+        "stagingId": "staging-t01e",
+        "taskId": "task-vhu26cq8",
+        "title": "getMemoriesForEvent 구현"
+      }
+    },
+    {
+      "id": "hist-1767608211321-r1zb",
+      "timestamp": "2026-01-05T10:16:51.321Z",
+      "type": "plan_created",
+      "details": {
+        "planId": "plan-lgzgomtg",
+        "title": "/zscode:summary 기능 추가",
+        "stagingCount": 5
+      }
+    },
+    {
+      "id": "hist-1767608219638-sclz",
+      "timestamp": "2026-01-05T10:16:59.638Z",
+      "type": "staging_started",
+      "details": {
+        "planId": "plan-lgzgomtg",
+        "stagingId": "staging-63rx",
+        "stagingName": "Phase 1: Memory 카테고리 및 타입 확장"
+      }
+    },
+    {
+      "id": "hist-1767608225493-z1oh",
+      "timestamp": "2026-01-05T10:17:05.493Z",
+      "type": "task_started",
+      "details": {
+        "taskId": "task-lacoahx6",
+        "taskTitle": "DEFAULT_MEMORY_CATEGORIES에 project-summary 추가"
+      }
+    },
+    {
+      "id": "hist-1767608244277-srm8",
+      "timestamp": "2026-01-05T10:17:24.277Z",
+      "type": "task_completed",
+      "details": {
+        "taskId": "task-lacoahx6",
+        "taskTitle": "DEFAULT_MEMORY_CATEGORIES에 project-summary 추가"
+      }
+    },
+    {
+      "id": "hist-1767608244342-va7g",
+      "timestamp": "2026-01-05T10:17:24.342Z",
+      "type": "task_started",
+      "details": {
+        "taskId": "task-bptfqiag",
+        "taskTitle": "MemoryEventType에 context 관련 이벤트 확인"
+      }
+    },
+    {
+      "id": "hist-1767608252242-mt81",
+      "timestamp": "2026-01-05T10:17:32.242Z",
+      "type": "task_completed",
+      "details": {
+        "taskId": "task-bptfqiag",
+        "taskTitle": "MemoryEventType에 context 관련 이벤트 확인"
+      }
+    },
+    {
+      "id": "hist-1767608252242-vaka",
+      "timestamp": "2026-01-05T10:17:32.242Z",
+      "type": "staging_completed",
+      "details": {
+        "stagingId": "staging-63rx",
+        "stagingName": "Phase 1: Memory 카테고리 및 타입 확장"
+      }
+    },
+    {
+      "id": "hist-1767608260200-ykz3",
+      "timestamp": "2026-01-05T10:17:40.200Z",
+      "type": "staging_started",
+      "details": {
+        "planId": "plan-lgzgomtg",
+        "stagingId": "staging-hzcd",
+        "stagingName": "Phase 2: Summary 생성/업데이트 도구 구현"
+      }
+    },
+    {
+      "id": "hist-1767608263989-49xb",
+      "timestamp": "2026-01-05T10:17:43.989Z",
+      "type": "task_started",
+      "details": {
+        "taskId": "task-1n3gf28o",
+        "taskTitle": "StateManager에 summary 관련 메서드 추가"
+      }
+    },
+    {
+      "id": "hist-1767608298347-yl5x",
+      "timestamp": "2026-01-05T10:18:18.347Z",
+      "type": "task_completed",
+      "details": {
+        "taskId": "task-1n3gf28o",
+        "taskTitle": "StateManager에 summary 관련 메서드 추가"
+      }
+    },
+    {
+      "id": "hist-1767608311811-zsrb",
+      "timestamp": "2026-01-05T10:18:31.811Z",
+      "type": "task_started",
+      "details": {
+        "taskId": "task-t5yjtuy1",
+        "taskTitle": "summary.ts 도구 파일 생성"
+      }
+    },
+    {
+      "id": "hist-1767608349087-ispg",
+      "timestamp": "2026-01-05T10:19:09.087Z",
+      "type": "task_completed",
+      "details": {
+        "taskId": "task-t5yjtuy1",
+        "taskTitle": "summary.ts 도구 파일 생성"
+      }
+    },
+    {
+      "id": "hist-1767608353019-za2m",
+      "timestamp": "2026-01-05T10:19:13.019Z",
+      "type": "task_started",
+      "details": {
+        "taskId": "task-rkc47bw5",
+        "taskTitle": "tools/index.ts에 summary 도구 등록"
+      }
+    },
+    {
+      "id": "hist-1767608382713-qvv0",
+      "timestamp": "2026-01-05T10:19:42.713Z",
+      "type": "task_completed",
+      "details": {
+        "taskId": "task-rkc47bw5",
+        "taskTitle": "tools/index.ts에 summary 도구 등록"
+      }
+    },
+    {
+      "id": "hist-1767608382713-1lxy",
+      "timestamp": "2026-01-05T10:19:42.713Z",
+      "type": "staging_completed",
+      "details": {
+        "stagingId": "staging-hzcd",
+        "stagingName": "Phase 2: Summary 생성/업데이트 도구 구현"
+      }
+    },
+    {
+      "id": "hist-1767608390106-tbi0",
+      "timestamp": "2026-01-05T10:19:50.106Z",
+      "type": "staging_started",
+      "details": {
+        "planId": "plan-lgzgomtg",
+        "stagingId": "staging-s8c3",
+        "stagingName": "Phase 3: Slash Command 파일 생성"
+      }
+    },
+    {
+      "id": "hist-1767608395576-5tjl",
+      "timestamp": "2026-01-05T10:19:55.576Z",
+      "type": "task_started",
+      "details": {
+        "taskId": "task-19nfppvh",
+        "taskTitle": ".claude/commands/zscode-summary.md 파일 생성"
+      }
+    },
+    {
+      "id": "hist-1767608421612-1ueq",
+      "timestamp": "2026-01-05T10:20:21.612Z",
+      "type": "task_completed",
+      "details": {
+        "taskId": "task-19nfppvh",
+        "taskTitle": ".claude/commands/zscode-summary.md 파일 생성"
+      }
+    },
+    {
+      "id": "hist-1767608421612-2xep",
+      "timestamp": "2026-01-05T10:20:21.612Z",
+      "type": "staging_completed",
+      "details": {
+        "stagingId": "staging-s8c3",
+        "stagingName": "Phase 3: Slash Command 파일 생성"
+      }
+    },
+    {
+      "id": "hist-1767608432723-i8nn",
+      "timestamp": "2026-01-05T10:20:32.723Z",
+      "type": "staging_started",
+      "details": {
+        "planId": "plan-lgzgomtg",
+        "stagingId": "staging-ilw6",
+        "stagingName": "Phase 4: Context 자동 주입 확장"
+      }
+    },
+    {
+      "id": "hist-1767608437494-e527",
+      "timestamp": "2026-01-05T10:20:37.494Z",
+      "type": "task_started",
+      "details": {
+        "taskId": "task-o945bcox",
+        "taskTitle": "get_full_context에 project-summary Memory 포함"
+      }
+    },
+    {
+      "id": "hist-1767608459505-yg92",
+      "timestamp": "2026-01-05T10:20:59.505Z",
+      "type": "task_completed",
+      "details": {
+        "taskId": "task-o945bcox",
+        "taskTitle": "get_full_context에 project-summary Memory 포함"
+      }
+    },
+    {
+      "id": "hist-1767608464026-1vxe",
+      "timestamp": "2026-01-05T10:21:04.026Z",
+      "type": "task_started",
+      "details": {
+        "taskId": "task-rzebd1lx",
+        "taskTitle": "zscode:start에서 project-summary 자동 포함"
+      }
+    },
+    {
+      "id": "hist-1767608491391-bkr2",
+      "timestamp": "2026-01-05T10:21:31.391Z",
+      "type": "task_completed",
+      "details": {
+        "taskId": "task-rzebd1lx",
+        "taskTitle": "zscode:start에서 project-summary 자동 포함"
+      }
+    },
+    {
+      "id": "hist-1767608495992-5gn8",
+      "timestamp": "2026-01-05T10:21:35.992Z",
+      "type": "task_started",
+      "details": {
+        "taskId": "task-axpeq8al",
+        "taskTitle": "update_task에서 in_progress 전환 시 summary 포함"
+      }
+    },
+    {
+      "id": "hist-1767608528243-yn6o",
+      "timestamp": "2026-01-05T10:22:08.243Z",
+      "type": "task_completed",
+      "details": {
+        "taskId": "task-axpeq8al",
+        "taskTitle": "update_task에서 in_progress 전환 시 summary 포함"
+      }
+    },
+    {
+      "id": "hist-1767608528243-zbtf",
+      "timestamp": "2026-01-05T10:22:08.243Z",
+      "type": "staging_completed",
+      "details": {
+        "stagingId": "staging-ilw6",
+        "stagingName": "Phase 4: Context 자동 주입 확장"
+      }
+    },
+    {
+      "id": "hist-1767608533429-ssdo",
+      "timestamp": "2026-01-05T10:22:13.429Z",
+      "type": "staging_started",
+      "details": {
+        "planId": "plan-lgzgomtg",
+        "stagingId": "staging-5ffx",
+        "stagingName": "Phase 5: 빌드 및 테스트"
+      }
+    },
+    {
+      "id": "hist-1767608539541-2urr",
+      "timestamp": "2026-01-05T10:22:19.541Z",
+      "type": "task_started",
+      "details": {
+        "taskId": "task-voh0eegb",
+        "taskTitle": "npm run build 실행"
+      }
+    },
+    {
+      "id": "hist-1767608550465-udi3",
+      "timestamp": "2026-01-05T10:22:30.465Z",
+      "type": "task_completed",
+      "details": {
+        "taskId": "task-voh0eegb",
+        "taskTitle": "npm run build 실행"
+      }
+    },
+    {
+      "id": "hist-1767608550515-tt8y",
+      "timestamp": "2026-01-05T10:22:30.515Z",
+      "type": "task_started",
+      "details": {
+        "taskId": "task-aazb5ywe",
+        "taskTitle": "npm test 실행"
+      }
+    },
+    {
+      "id": "hist-1767608569338-58y1",
+      "timestamp": "2026-01-05T10:22:49.338Z",
+      "type": "task_completed",
+      "details": {
+        "taskId": "task-aazb5ywe",
+        "taskTitle": "npm test 실행"
+      }
+    },
+    {
+      "id": "hist-1767608569338-1eq3",
+      "timestamp": "2026-01-05T10:22:49.338Z",
+      "type": "staging_completed",
+      "details": {
+        "stagingId": "staging-5ffx",
+        "stagingName": "Phase 5: 빌드 및 테스트"
+      }
+    },
+    {
+      "id": "hist-1767609331042-zcy8",
+      "timestamp": "2026-01-05T10:35:31.042Z",
+      "type": "memory_added",
+      "details": {
+        "memoryId": "mem-oga4lv6e",
+        "title": "ZSCode - Project Summary",
+        "category": "project-summary"
+      }
+    },
+    {
+      "id": "hist-1767609643645-c5og",
+      "timestamp": "2026-01-05T10:40:43.645Z",
+      "type": "plan_created",
+      "details": {
+        "planId": "plan-qp19ymxq",
+        "title": "ZSCode Context 최적화 및 출력 가독성 개선",
+        "stagingCount": 5
+      }
+    },
+    {
+      "id": "hist-1767609687964-zsc7",
+      "timestamp": "2026-01-05T10:41:27.964Z",
+      "type": "staging_started",
+      "details": {
+        "planId": "plan-qp19ymxq",
+        "stagingId": "staging-319i",
+        "stagingName": "Phase 1: Context 경량화"
+      }
+    },
+    {
+      "id": "hist-1767609730937-1p29",
+      "timestamp": "2026-01-05T10:42:10.937Z",
+      "type": "task_started",
+      "details": {
+        "taskId": "task-lzatw518",
+        "taskTitle": "get_full_context에 lightweight 옵션 추가"
+      }
+    },
+    {
+      "id": "hist-1767609749159-drpc",
+      "timestamp": "2026-01-05T10:42:29.160Z",
+      "type": "task_completed",
+      "details": {
+        "taskId": "task-lzatw518",
+        "taskTitle": "get_full_context에 lightweight 옵션 추가"
+      }
+    },
+    {
+      "id": "hist-1767609749217-y39v",
+      "timestamp": "2026-01-05T10:42:29.217Z",
+      "type": "task_started",
+      "details": {
+        "taskId": "task-64374bqv",
+        "taskTitle": "Task output 조건부 포함"
+      }
+    },
+    {
+      "id": "hist-1767609786701-o041",
+      "timestamp": "2026-01-05T10:43:06.701Z",
+      "type": "task_completed",
+      "details": {
+        "taskId": "task-64374bqv",
+        "taskTitle": "Task output 조건부 포함"
+      }
+    },
+    {
+      "id": "hist-1767609802039-eky8",
+      "timestamp": "2026-01-05T10:43:22.039Z",
+      "type": "task_started",
+      "details": {
+        "taskId": "task-f64r7a5a",
+        "taskTitle": "중복 데이터 제거"
+      }
+    },
+    {
+      "id": "hist-1767609807900-fu3n",
+      "timestamp": "2026-01-05T10:43:27.900Z",
+      "type": "task_completed",
+      "details": {
+        "taskId": "task-f64r7a5a",
+        "taskTitle": "중복 데이터 제거"
+      }
+    },
+    {
+      "id": "hist-1767609807900-mm8a",
+      "timestamp": "2026-01-05T10:43:27.900Z",
+      "type": "staging_completed",
+      "details": {
+        "stagingId": "staging-319i",
+        "stagingName": "Phase 1: Context 경량화"
+      }
+    },
+    {
+      "id": "hist-1767609813248-t0vt",
+      "timestamp": "2026-01-05T10:43:33.248Z",
+      "type": "staging_started",
+      "details": {
+        "planId": "plan-qp19ymxq",
+        "stagingId": "staging-gi0e",
+        "stagingName": "Phase 2: JSON 출력 최적화"
+      }
+    },
+    {
+      "id": "hist-1767609839434-0nz2",
+      "timestamp": "2026-01-05T10:43:59.434Z",
+      "type": "task_started",
+      "details": {
+        "taskId": "task-zknnjg9j",
+        "taskTitle": "JSON 포맷터 유틸 생성"
+      }
+    },
+    {
+      "id": "hist-1767609959747-fvez",
+      "timestamp": "2026-01-05T10:45:59.747Z",
+      "type": "task_completed",
+      "details": {
+        "taskId": "task-zknnjg9j",
+        "taskTitle": "JSON 포맷터 유틸 생성"
+      }
+    },
+    {
+      "id": "hist-1767609959808-gean",
+      "timestamp": "2026-01-05T10:45:59.808Z",
+      "type": "task_started",
+      "details": {
+        "taskId": "task-z35wdwb7",
+        "taskTitle": "MCP 도구 응답 포맷 통일"
+      }
+    },
+    {
+      "id": "hist-1767609974509-t68g",
+      "timestamp": "2026-01-05T10:46:14.509Z",
+      "type": "task_completed",
+      "details": {
+        "taskId": "task-z35wdwb7",
+        "taskTitle": "MCP 도구 응답 포맷 통일"
+      }
+    },
+    {
+      "id": "hist-1767609974509-vupe",
+      "timestamp": "2026-01-05T10:46:14.509Z",
+      "type": "staging_completed",
+      "details": {
+        "stagingId": "staging-gi0e",
+        "stagingName": "Phase 2: JSON 출력 최적화"
+      }
+    },
+    {
+      "id": "hist-1767610001561-g80k",
+      "timestamp": "2026-01-05T10:46:41.561Z",
+      "type": "staging_started",
+      "details": {
+        "planId": "plan-qp19ymxq",
+        "stagingId": "staging-x5ny",
+        "stagingName": "Phase 3: 사용자 출력 가독성"
+      }
+    },
+    {
+      "id": "hist-1767610006607-gtdf",
+      "timestamp": "2026-01-05T10:46:46.607Z",
+      "type": "task_started",
+      "details": {
+        "taskId": "task-5cq1hnz4",
+        "taskTitle": "상태 출력 포맷터 생성"
+      }
+    },
+    {
+      "id": "hist-1767610016615-xp3k",
+      "timestamp": "2026-01-05T10:46:56.615Z",
+      "type": "task_completed",
+      "details": {
+        "taskId": "task-5cq1hnz4",
+        "taskTitle": "상태 출력 포맷터 생성"
+      }
+    },
+    {
+      "id": "hist-1767610016667-w6t7",
+      "timestamp": "2026-01-05T10:46:56.667Z",
+      "type": "task_started",
+      "details": {
+        "taskId": "task-rbx9xtvt",
+        "taskTitle": "계획 출력 포맷터 생성"
+      }
+    },
+    {
+      "id": "hist-1767610023639-n9vu",
+      "timestamp": "2026-01-05T10:47:03.640Z",
+      "type": "task_completed",
+      "details": {
+        "taskId": "task-rbx9xtvt",
+        "taskTitle": "계획 출력 포맷터 생성"
+      }
+    },
+    {
+      "id": "hist-1767610023698-lqy2",
+      "timestamp": "2026-01-05T10:47:03.698Z",
+      "type": "task_started",
+      "details": {
+        "taskId": "task-azyjg1pm",
+        "taskTitle": "태스크 업데이트 출력 간소화"
+      }
+    },
+    {
+      "id": "hist-1767610034273-7966",
+      "timestamp": "2026-01-05T10:47:14.273Z",
+      "type": "task_completed",
+      "details": {
+        "taskId": "task-azyjg1pm",
+        "taskTitle": "태스크 업데이트 출력 간소화"
+      }
+    },
+    {
+      "id": "hist-1767610034273-s71l",
+      "timestamp": "2026-01-05T10:47:14.273Z",
+      "type": "staging_completed",
+      "details": {
+        "stagingId": "staging-x5ny",
+        "stagingName": "Phase 3: 사용자 출력 가독성"
+      }
+    },
+    {
+      "id": "hist-1767610041370-fwom",
+      "timestamp": "2026-01-05T10:47:21.370Z",
+      "type": "staging_started",
+      "details": {
+        "planId": "plan-qp19ymxq",
+        "stagingId": "staging-ddjc",
+        "stagingName": "Phase 4: 스킬 최적화"
+      }
+    },
+    {
+      "id": "hist-1767610050722-qstw",
+      "timestamp": "2026-01-05T10:47:30.722Z",
+      "type": "task_started",
+      "details": {
+        "taskId": "task-qpnziimw",
+        "taskTitle": "zscode-planning 스킬 최적화"
+      }
+    },
+    {
+      "id": "hist-1767610064251-t59h",
+      "timestamp": "2026-01-05T10:47:44.252Z",
+      "type": "task_started",
+      "details": {
+        "taskId": "task-xqhxy8sk",
+        "taskTitle": "zscode-summary 스킬 최적화"
+      }
+    },
+    {
+      "id": "hist-1767610136829-4t4n",
+      "timestamp": "2026-01-05T10:48:56.829Z",
+      "type": "task_completed",
+      "details": {
+        "taskId": "task-xqhxy8sk",
+        "taskTitle": "zscode-summary 스킬 최적화"
+      }
+    },
+    {
+      "id": "hist-1767610136890-7lx7",
+      "timestamp": "2026-01-05T10:48:56.890Z",
+      "type": "task_completed",
+      "details": {
+        "taskId": "task-qpnziimw",
+        "taskTitle": "zscode-planning 스킬 최적화"
+      }
+    },
+    {
+      "id": "hist-1767610136890-bcec",
+      "timestamp": "2026-01-05T10:48:56.890Z",
+      "type": "staging_completed",
+      "details": {
+        "stagingId": "staging-ddjc",
+        "stagingName": "Phase 4: 스킬 최적화"
+      }
+    },
+    {
+      "id": "hist-1767610149390-4a7x",
+      "timestamp": "2026-01-05T10:49:09.390Z",
+      "type": "staging_started",
+      "details": {
+        "planId": "plan-qp19ymxq",
+        "stagingId": "staging-23gc",
+        "stagingName": "Phase 5: 테스트 및 검증"
+      }
+    },
+    {
+      "id": "hist-1767610156927-u97k",
+      "timestamp": "2026-01-05T10:49:16.927Z",
+      "type": "task_started",
+      "details": {
+        "taskId": "task-636koyb4",
+        "taskTitle": "Context 크기 비교 테스트"
+      }
+    },
+    {
+      "id": "hist-1767610156986-is59",
+      "timestamp": "2026-01-05T10:49:16.986Z",
+      "type": "task_started",
+      "details": {
+        "taskId": "task-myst6mwh",
+        "taskTitle": "기존 기능 호환성 테스트"
+      }
+    },
+    {
+      "id": "hist-1767610181824-4ze9",
+      "timestamp": "2026-01-05T10:49:41.824Z",
+      "type": "task_completed",
+      "details": {
+        "taskId": "task-636koyb4",
+        "taskTitle": "Context 크기 비교 테스트"
+      }
+    },
+    {
+      "id": "hist-1767610181883-d920",
+      "timestamp": "2026-01-05T10:49:41.883Z",
+      "type": "task_completed",
+      "details": {
+        "taskId": "task-myst6mwh",
+        "taskTitle": "기존 기능 호환성 테스트"
+      }
+    },
+    {
+      "id": "hist-1767610181883-hwlc",
+      "timestamp": "2026-01-05T10:49:41.883Z",
+      "type": "staging_completed",
+      "details": {
+        "stagingId": "staging-23gc",
+        "stagingName": "Phase 5: 테스트 및 검증"
+      }
     }
   ],
   "context": {
-    "lastUpdated": "2026-01-05T09:28:02.065Z",
+    "lastUpdated": "2026-01-05T10:49:41.883Z",
     "activeFiles": [],
     "decisions": [],
     "memories": [
@@ -1123,6 +3006,20 @@
         "enabled": true,
         "createdAt": "2026-01-05T05:24:34.660Z",
         "updatedAt": "2026-01-05T09:28:02.065Z"
+      },
+      {
+        "id": "mem-oga4lv6e",
+        "category": "project-summary",
+        "title": "ZSCode - Project Summary",
+        "content": "# ZSCode Planning System\n\nClaude Code용 프로젝트 관리 플러그인으로, MCP(Model Context Protocol)를 통해 Plan/Staging/Task 기반의 구조화된 작업 관리를 제공합니다.\n\n## 프로젝트 구조\n\n```\nzscode-monorepo/\n├── packages/\n│   ├── mcp-server/          # MCP 서버 패키지 (@zeliper/zscode-mcp-server v1.0.4)\n│   │   └── src/\n│   │       ├── index.ts          # MCP 서버 엔트리포인트\n│   │       ├── state/            # 상태 관리\n│   │       │   ├── manager.ts    # StateManager 클래스\n│   │       │   ├── schema.ts     # Zod 스키마 정의\n│   │       │   └── types.ts      # TypeScript 타입\n│   │       ├── tools/            # MCP 도구들\n│   │       │   ├── plan.ts       # Plan/Task 관리 도구\n│   │       │   ├── staging.ts    # Staging 관리 도구\n│   │       │   ├── memory.ts     # Memory 관리 도구\n│   │       │   ├── summary.ts    # Summary 생성 도구\n│   │       │   ├── context.ts    # Context 조회 도구\n│   │       │   ├── modify.ts     # Plan/Staging/Task 수정 도구\n│   │       │   ├── archive.ts    # Archive/Unarchive 도구\n│   │       │   ├── status.ts     # Status 조회 도구\n│   │       │   ├── cancel.ts     # Cancel 도구\n│   │       │   └── files.ts      # 파일 읽기/쓰기 도구\n│   │       ├── errors/           # 커스텀 에러 클래스\n│   │       └── utils/            # 유틸리티 (paths, artifacts)\n│   └── cli/                 # CLI 패키지 (@zeliper/zscode v1.0.4)\n│       └── src/\n│           ├── index.ts          # CLI 엔트리포인트\n│           └── commands/init.ts  # init 명령어\n├── .claude/\n│   ├── state.json          # 프로젝트 상태 파일\n│   ├── plans/              # Plan 아티팩트 저장소\n│   ├── archive/            # 아카이브된 Plan\n│   └── commands/           # 슬래시 커맨드 정의\n│       ├── zscode-planning.md\n│       ├── zscode-memory.md\n│       └── zscode-summary.md\n└── package.json            # 모노레포 루트 설정\n```\n\n## 핵심 개념\n\n### Plan → Staging → Task 계층 구조\n- **Plan**: 프로젝트/기능 단위의 최상위 작업 계획\n- **Staging**: Plan 내 순차 실행되는 단계 (Phase)\n- **Task**: Staging 내에서 실행되는 개별 작업 (병렬/순차 실행 가능)\n\n### Memory 시스템\n- 규칙, 지침, 컨텍스트를 저장하는 시스템\n- 카테고리: general, planning, coding, review, staging-start, task-start, task-complete, staging-complete, plan-complete, project-summary\n- general 및 project-summary 카테고리는 항상 자동 적용\n\n## 주요 MCP 도구\n\n| 도구 | 설명 |\n|------|------|\n| `create_plan` | 새 Plan 생성 |\n| `zscode:start` | Staging 시작 |\n| `update_task` | Task 상태 업데이트 |\n| `save_task_output` | Task 결과 저장 |\n| `sync_plan` | Plan 상태 동기화 |\n| `zscode:status` | 상태 조회 |\n| `zscode:archive` | Plan 아카이브 |\n| `zscode:cancel` | Plan 취소 |\n| `zscode:unarchive` | Plan 복원 |\n| `add_memory` | Memory 추가 |\n| `generate_summary` | 프로젝트 Summary 생성 |\n\n## 기술 스택\n\n- **Language**: TypeScript 5.3+\n- **Runtime**: Node.js 18+\n- **MCP SDK**: @modelcontextprotocol/sdk ^1.0.0\n- **Validation**: Zod ^3.22.0\n- **Testing**: Vitest 4.0.16\n- **Build**: TypeScript Compiler (tsc)\n\n## 보안 기능\n\n- Path Traversal 방어 (isPathSafe, isValidId)\n- Atomic Write (임시 파일 후 rename)\n- Crypto.randomBytes 기반 ID 생성\n- Task 상태 전이 검증\n- 순환 의존성 검증\n- History 크기 제한 (1000개)\n\n## 현재 상태\n\n- **Version**: 1.0.4\n- **테스트**: 64개 테스트 케이스 통과\n- **완료된 Plan**: 1개 (ZSCode 프로젝트 개선)\n- **아카이브된 Plan**: 1개\n- **Draft Plan**: 1개 (Memory 자동 적용 시스템 구현)\n\n## 개발 워크플로\n\n1. `/zscode:planning <task>` - 새 Plan 생성\n2. `zscode:start planId stagingId` - Staging 시작\n3. `update_task` - Task 진행 및 완료\n4. `save_task_output` - 결과 저장\n5. `zscode:status` - 진행 상황 확인\n6. Plan 완료 시: build → test → commit → publish → push",
+        "tags": [
+          "auto-generated",
+          "summary"
+        ],
+        "priority": 100,
+        "enabled": true,
+        "createdAt": "2026-01-05T10:35:31.042Z",
+        "updatedAt": "2026-01-05T10:35:31.042Z"
       }
     ]
   }

@@ -68,7 +68,6 @@ export function registerStagingTools(server: McpServer, projectRoot: string): vo
 
         // Get staging-start memories + always-applied memories (general + project-summary)
         let appliedMemories: Memory[] = [];
-        let appliedMemoriesText: string | null = null;
         if (args.includeMemories) {
           // Combine always-applied (general + project-summary) with staging-start specific
           const alwaysApplied = manager.getAlwaysAppliedMemories();
@@ -85,12 +84,6 @@ export function registerStagingTools(server: McpServer, projectRoot: string): vo
 
           appliedMemories = Array.from(memoryMap.values())
             .sort((a, b) => b.priority - a.priority);
-
-          if (appliedMemories.length > 0) {
-            appliedMemoriesText = appliedMemories
-              .map(m => `## [${m.category.toUpperCase()}] ${m.title}\n${m.content}`)
-              .join("\n\n");
-          }
         }
 
         // Build session guidance if session info is available
@@ -149,7 +142,7 @@ export function registerStagingTools(server: McpServer, projectRoot: string): vo
           },
           // Related artifacts from dependent stagings
           relatedArtifacts: relatedArtifacts.length > 0 ? relatedArtifacts : undefined,
-          // Applied memories for staging-start
+          // Applied memories for staging-start (removed appliedMemoriesText to reduce context)
           appliedMemories: appliedMemories.length > 0 ? appliedMemories.map(m => ({
             id: m.id,
             category: m.category,
@@ -157,7 +150,6 @@ export function registerStagingTools(server: McpServer, projectRoot: string): vo
             content: m.content,
             priority: m.priority,
           })) : undefined,
-          appliedMemoriesText,
         };
       }, "zscode:start");
 

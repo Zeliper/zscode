@@ -7,6 +7,7 @@ import {
   PlanNotFoundError,
 } from "../errors/index.js";
 import type { PlanSummary, StatusOverview, StagingDetail, PlanDetail } from "../state/types.js";
+import { createResponse, createErrorResponse, formatStatusOverview, formatPlanSummary, formatStagingDetail } from "../utils/format.js";
 
 /**
  * Register status tool
@@ -18,6 +19,7 @@ export function registerStatusTool(server: McpServer): void {
     "Get the status of all plans or a specific plan. Shows progress, current staging, and task completion. Use without planId for overview, with planId for detailed view.",
     {
       planId: z.string().optional().describe("Plan ID for detailed status (omit for overview of all plans)"),
+      readable: z.boolean().default(false).describe("If true, return human-readable markdown instead of JSON"),
     },
     async (args) => {
       const result = await withErrorHandling(async () => {
@@ -37,17 +39,48 @@ export function registerStatusTool(server: McpServer): void {
       }, "zscode:status");
 
       if (result.success) {
-        return {
-          content: [{ type: "text" as const, text: JSON.stringify(result.data, null, 2) }],
-        };
+        // Human-readable format
+        if (args.readable) {
+          const text = formatStatusAsMarkdown(result.data);
+          return { content: [{ type: "text" as const, text }] };
+        }
+        return createResponse(result.data);
       } else {
-        return {
-          content: [{ type: "text" as const, text: JSON.stringify(result.error, null, 2) }],
-          isError: true,
-        };
+        return createErrorResponse(result.error);
       }
     }
   );
+}
+
+/**
+ * Format status data as human-readable markdown
+ */
+function formatStatusAsMarkdown(data: { overview?: StatusOverview; plans?: PlanSummary[]; plan?: PlanDetail }): string {
+  const lines: string[] = [];
+
+  if (data.overview && data.plans) {
+    // Overview mode
+    lines.push(formatStatusOverview(data.overview));
+    lines.push("");
+    lines.push("## Plans");
+    lines.push("");
+    for (const plan of data.plans) {
+      lines.push(formatPlanSummary(plan));
+      lines.push("");
+    }
+  } else if (data.plan) {
+    // Detailed plan mode
+    lines.push(`# ${data.plan.title}`);
+    lines.push(`Status: ${data.plan.status} | ID: ${data.plan.id}`);
+    lines.push("");
+
+    for (const staging of data.plan.stagings) {
+      lines.push(formatStagingDetail(staging));
+      lines.push("");
+    }
+  }
+
+  return lines.join("\n");
 }
 
 /**
