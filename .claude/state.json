@@ -1078,28 +1078,51 @@
         "title": "ZSCode 프로젝트 개선",
         "reason": "모든 8개 Phase 완료 - 보안, 코드 품질, 테스트, 에러 처리, 타입 안전성, 빌드 검증, 데이터 무결성, 누락 기능 추가"
       }
+    },
+    {
+      "id": "hist-1767605282065-04rg",
+      "timestamp": "2026-01-05T09:28:02.065Z",
+      "type": "memory_updated",
+      "details": {
+        "memoryId": "mem-a6h0lnwh",
+        "updates": {
+          "title": "Plan 완료 시 빌드 및 배포 규칙",
+          "content": "Plan이 Complete 되면 반드시 다음을 순서대로 수행해야 합니다:\n\n1. **빌드 확인**: `npm run build` 실행하여 빌드 성공 확인\n2. **테스트 확인**: `npm test` 실행하여 모든 테스트 통과 확인\n3. **Git 커밋**: 변경사항을 커밋\n4. **NPM 배포**: `npm publish --workspaces` 실행하여 패키지 퍼블리시\n5. **Git 푸시**: `git push` 실행\n\n주의: Plan이 archived 되기 전에 이 단계들을 완료해야 합니다.",
+          "tags": [
+            "deployment",
+            "release",
+            "npm",
+            "git",
+            "build",
+            "test"
+          ],
+          "priority": 90
+        }
+      }
     }
   ],
   "context": {
-    "lastUpdated": "2026-01-05T09:24:09.966Z",
+    "lastUpdated": "2026-01-05T09:28:02.065Z",
     "activeFiles": [],
     "decisions": [],
     "memories": [
       {
         "id": "mem-a6h0lnwh",
         "category": "general",
-        "title": "Plan 완료 시 배포 규칙",
-        "content": "Plan이 Complete 되면 반드시 다음 두 가지를 수행해야 합니다:\n1. NPM에 패키지 퍼블리시 (npm publish)\n2. Git에 커밋 및 푸시 (git push)",
+        "title": "Plan 완료 시 빌드 및 배포 규칙",
+        "content": "Plan이 Complete 되면 반드시 다음을 순서대로 수행해야 합니다:\n\n1. **빌드 확인**: `npm run build` 실행하여 빌드 성공 확인\n2. **테스트 확인**: `npm test` 실행하여 모든 테스트 통과 확인\n3. **Git 커밋**: 변경사항을 커밋\n4. **NPM 배포**: `npm publish --workspaces` 실행하여 패키지 퍼블리시\n5. **Git 푸시**: `git push` 실행\n\n주의: Plan이 archived 되기 전에 이 단계들을 완료해야 합니다.",
         "tags": [
           "deployment",
           "release",
           "npm",
-          "git"
+          "git",
+          "build",
+          "test"
         ],
-        "priority": 80,
+        "priority": 90,
         "enabled": true,
         "createdAt": "2026-01-05T05:24:34.660Z",
-        "updatedAt": "2026-01-05T05:24:34.660Z"
+        "updatedAt": "2026-01-05T09:28:02.065Z"
       }
     ]
   }
