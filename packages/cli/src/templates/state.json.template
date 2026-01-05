@@ -1,0 +1,29 @@
+{
+  "version": "2.0.0",
+  "project": {
+    "name": "{{PROJECT_NAME}}",
+    "description": "{{PROJECT_DESCRIPTION}}",
+    "goals": [],
+    "constraints": [],
+    "createdAt": "{{CREATED_AT}}",
+    "updatedAt": "{{CREATED_AT}}"
+  },
+  "plans": {},
+  "stagings": {},
+  "tasks": {},
+  "history": [
+    {
+      "id": "hist-{{TIMESTAMP}}-init",
+      "timestamp": "{{CREATED_AT}}",
+      "type": "project_initialized",
+      "details": {
+        "projectName": "{{PROJECT_NAME}}"
+      }
+    }
+  ],
+  "context": {
+    "lastUpdated": "{{CREATED_AT}}",
+    "activeFiles": [],
+    "decisions": []
+  }
+}

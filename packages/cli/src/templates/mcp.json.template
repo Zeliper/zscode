@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "zscode": {
+      "command": "npx",
+      "args": ["-y", "@zeliper/zscode-mcp-server"],
+      "env": {
+        "ZSCODE_PROJECT_ROOT": "${workspaceFolder}"
+      }
+    }
+  }
+}
