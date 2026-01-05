@@ -17,6 +17,11 @@ import {
   type HistoryEntryType,
   type TaskOutput,
   type IdGenerator,
+  type MemoryEventType,
+  type RelatedStagingArtifacts,
+  type CrossReferencedTaskOutput,
+  type ModelType,
+  type SessionBudget,
 } from "./types.js";
 import {
   normalizePath,
@@ -249,11 +254,15 @@ export class StateManager {
       name: string;
       description?: string;
       execution_type: "parallel" | "sequential";
+      default_model?: ModelType;
+      session_budget?: SessionBudget;
+      recommended_sessions?: number;
       tasks: Array<{
         title: string;
         description?: string;
         priority: "high" | "medium" | "low";
         execution_mode: "parallel" | "sequential";
+        model?: ModelType;
         depends_on_index: number[];
       }>;
     }>
@@ -290,7 +299,10 @@ export class StateManager {
           priority: taskConfig.priority,
           status: "pending",
           execution_mode: taskConfig.execution_mode,
+          model: taskConfig.model, // Model override for this task
           depends_on: [], // Will be resolved after all tasks are created
+          cross_staging_refs: [], // Will be populated if cross-staging refs are provided
+          memory_tags: [], // Will be populated if memory tags are provided
           order: taskIndex,
           createdAt: now,
           updatedAt: now,
@@ -321,7 +333,12 @@ export class StateManager {
         order: stagingIndex,
         execution_type: config.execution_type,
         status: "pending",
+        default_model: config.default_model, // Default model for tasks in this staging
+        session_budget: config.session_budget, // Session budget category
+        recommended_sessions: config.recommended_sessions, // Recommended session count
         tasks: taskIds,
+        depends_on_stagings: [], // Will be populated if staging dependencies are provided
+        auto_include_artifacts: true, // Default to auto-include
         artifacts_path: artifactsPath,
         createdAt: now,
       };
@@ -797,6 +814,97 @@ export class StateManager {
     return result.sort((a, b) => b.priority - a.priority);
   }
 
+  /**
+   * Get memories for a specific event (staging-start, task-start, etc.)
+   * Returns general + event-specific memories, optionally filtered by additional tags
+   */
+  getMemoriesForEvent(event: MemoryEventType, additionalTags?: string[]): Memory[] {
+    if (!this.state) return [];
+
+    const enabledMemories = this.state.context.memories.filter(m => m.enabled);
+
+    // Get general + event-specific memories
+    let result = enabledMemories.filter(m =>
+      m.category === "general" || m.category === event
+    );
+
+    // If additional tags are provided, also include memories matching those tags
+    if (additionalTags && additionalTags.length > 0) {
+      const tagMatched = enabledMemories.filter(m =>
+        additionalTags.some(tag => m.tags.includes(tag))
+      );
+      // Add tag-matched memories that aren't already in result
+      const resultIds = new Set(result.map(m => m.id));
+      for (const m of tagMatched) {
+        if (!resultIds.has(m.id)) {
+          result.push(m);
+        }
+      }
+    }
+
+    // Sort by priority (descending)
+    return result.sort((a, b) => b.priority - a.priority);
+  }
+
+  /**
+   * Get artifacts from stagings that this staging depends on
+   */
+  getRelatedStagingArtifacts(stagingId: string): RelatedStagingArtifacts[] {
+    const staging = this.getStaging(stagingId);
+    if (!staging) return [];
+
+    const results: RelatedStagingArtifacts[] = [];
+
+    for (const ref of staging.depends_on_stagings) {
+      const depStaging = this.getStaging(ref.stagingId);
+      if (!depStaging) continue;
+
+      const tasks = this.getTasksByStaging(ref.stagingId);
+      const taskOutputs: Record<string, TaskOutput> = {};
+
+      // If taskIds is specified, only include those tasks; otherwise include all
+      const targetTaskIds = ref.taskIds ?? tasks.map(t => t.id);
+
+      for (const task of tasks) {
+        if (targetTaskIds.includes(task.id) && task.output) {
+          taskOutputs[task.id] = task.output;
+        }
+      }
+
+      results.push({
+        stagingId: depStaging.id,
+        stagingName: depStaging.name,
+        taskOutputs,
+      });
+    }
+
+    return results;
+  }
+
+  /**
+   * Get task outputs for cross-staging references
+   */
+  getCrossReferencedTaskOutputs(taskId: string): CrossReferencedTaskOutput[] {
+    const task = this.getTask(taskId);
+    if (!task) return [];
+
+    const results: CrossReferencedTaskOutput[] = [];
+
+    for (const ref of task.cross_staging_refs) {
+      const refTask = this.getTask(ref.taskId);
+      if (!refTask) continue;
+
+      results.push({
+        taskId: refTask.id,
+        taskTitle: refTask.title,
+        stagingId: ref.stagingId,
+        output: refTask.output ?? null,
+      });
+    }
+
+    return results;
+  }
+
   async updateMemory(
     memoryId: string,
     updates: {
@@ -850,6 +958,141 @@ export class StateManager {
     return Array.from(categories).sort();
   }
 
+  // ============ Project Summary Operations ============
+  /**
+   * Get the existing project summary memory (if any)
+   */
+  getProjectSummary(): Memory | undefined {
+    if (!this.state) return undefined;
+    return this.state.context.memories.find(m => m.category === "project-summary");
+  }
+
+  /**
+   * Generate a project summary from current state
+   */
+  generateProjectSummaryContent(): string {
+    if (!this.state) return "";
+
+    const project = this.state.project;
+    const plans = Object.values(this.state.plans);
+    const memories = this.state.context.memories.filter(m => m.category !== "project-summary");
+
+    // Calculate stats
+    const activePlans = plans.filter(p => p.status === "active");
+    const completedPlans = plans.filter(p => p.status === "completed");
+    const totalTasks = Object.keys(this.state.tasks).length;
+    const completedTasks = Object.values(this.state.tasks).filter(t => t.status === "done").length;
+
+    // Build summary content
+    const lines: string[] = [];
+
+    // Project info
+    lines.push(`# ${project.name}`);
+    if (project.description) {
+      lines.push(`\n${project.description}`);
+    }
+
+    // Goals
+    if (project.goals.length > 0) {
+      lines.push(`\n## Goals`);
+      project.goals.forEach(g => lines.push(`- ${g}`));
+    }
+
+    // Constraints
+    if (project.constraints.length > 0) {
+      lines.push(`\n## Constraints`);
+      project.constraints.forEach(c => lines.push(`- ${c}`));
+    }
+
+    // Current status
+    lines.push(`\n## Status`);
+    lines.push(`- Active Plans: ${activePlans.length}`);
+    lines.push(`- Completed Plans: ${completedPlans.length}`);
+    lines.push(`- Tasks: ${completedTasks}/${totalTasks} completed`);
+
+    // Active plan details
+    if (activePlans.length > 0) {
+      lines.push(`\n## Active Work`);
+      for (const plan of activePlans) {
+        const stagings = this.getStagingsByPlan(plan.id);
+        const currentStaging = stagings.find(s => s.status === "in_progress");
+        lines.push(`- **${plan.title}**`);
+        if (currentStaging) {
+          const tasks = this.getTasksByStaging(currentStaging.id);
+          const inProgress = tasks.filter(t => t.status === "in_progress");
+          lines.push(`  - Current: ${currentStaging.name}`);
+          if (inProgress.length > 0) {
+            lines.push(`  - Tasks: ${inProgress.map(t => t.title).join(", ")}`);
+          }
+        }
+      }
+    }
+
+    // Key memories (non project-summary)
+    const keyMemories = memories.filter(m => m.enabled && m.priority >= 70);
+    if (keyMemories.length > 0) {
+      lines.push(`\n## Key Rules`);
+      for (const m of keyMemories.slice(0, 5)) {
+        lines.push(`- **${m.title}** (${m.category})`);
+      }
+    }
+
+    // Recent decisions
+    const recentDecisions = this.state.context.decisions.slice(-3);
+    if (recentDecisions.length > 0) {
+      lines.push(`\n## Recent Decisions`);
+      for (const d of recentDecisions) {
+        lines.push(`- ${d.title}: ${d.decision}`);
+      }
+    }
+
+    return lines.join("\n");
+  }
+
+  /**
+   * Create or update the project summary memory
+   */
+  async saveProjectSummary(content?: string): Promise<Memory> {
+    const state = this.ensureInitialized();
+
+    const summaryContent = content ?? this.generateProjectSummaryContent();
+    const existingSummary = this.getProjectSummary();
+
+    if (existingSummary) {
+      // Update existing summary
+      return this.updateMemory(existingSummary.id, {
+        content: summaryContent,
+        title: `${state.project.name} - Project Summary`,
+      });
+    } else {
+      // Create new summary
+      return this.addMemory(
+        "project-summary",
+        `${state.project.name} - Project Summary`,
+        summaryContent,
+        ["auto-generated", "summary"],
+        100 // Highest priority to appear first
+      );
+    }
+  }
+
+  /**
+   * Get memories that should always be applied (general + project-summary)
+   */
+  getAlwaysAppliedMemories(): Memory[] {
+    if (!this.state) return [];
+
+    const enabledMemories = this.state.context.memories.filter(m => m.enabled);
+
+    // Return general + project-summary memories
+    const result = enabledMemories.filter(m =>
+      m.category === "general" || m.category === "project-summary"
+    );
+
+    // Sort by priority (descending)
+    return result.sort((a, b) => b.priority - a.priority);
+  }
+
   // ============ Session Operations ============
   async startSession(): Promise<void> {
     await this.addHistory("session_started", {});
@@ -886,7 +1129,14 @@ export class StateManager {
     return plan;
   }
 
-  async updateStaging(stagingId: string, updates: { name?: string; description?: string; execution_type?: "parallel" | "sequential" }): Promise<Staging> {
+  async updateStaging(stagingId: string, updates: {
+    name?: string;
+    description?: string;
+    execution_type?: "parallel" | "sequential";
+    default_model?: ModelType;
+    session_budget?: SessionBudget;
+    recommended_sessions?: number;
+  }): Promise<Staging> {
     const staging = this.requireStaging(stagingId);
 
     if (staging.status === "completed" || staging.status === "cancelled") {
@@ -896,6 +1146,9 @@ export class StateManager {
     if (updates.name !== undefined) staging.name = updates.name;
     if (updates.description !== undefined) staging.description = updates.description;
     if (updates.execution_type !== undefined) staging.execution_type = updates.execution_type;
+    if (updates.default_model !== undefined) staging.default_model = updates.default_model;
+    if (updates.session_budget !== undefined) staging.session_budget = updates.session_budget;
+    if (updates.recommended_sessions !== undefined) staging.recommended_sessions = updates.recommended_sessions;
 
     await this.addHistory("staging_updated", { stagingId, updates });
     await this.save();
@@ -909,6 +1162,9 @@ export class StateManager {
       name: string;
       description?: string;
       execution_type: "parallel" | "sequential";
+      default_model?: ModelType;
+      session_budget?: SessionBudget;
+      recommended_sessions?: number;
       insertAt?: number; // If not provided, adds at the end
     }
   ): Promise<Staging> {
@@ -940,7 +1196,12 @@ export class StateManager {
       order: insertAt,
       execution_type: config.execution_type,
       status: "pending",
+      default_model: config.default_model,
+      session_budget: config.session_budget,
+      recommended_sessions: config.recommended_sessions,
       tasks: [],
+      depends_on_stagings: [],
+      auto_include_artifacts: true,
       artifacts_path: artifactsPath,
       createdAt: now,
     };
@@ -1028,6 +1289,7 @@ export class StateManager {
       description?: string;
       priority: "high" | "medium" | "low";
       execution_mode: "parallel" | "sequential";
+      model?: ModelType;
       depends_on?: string[]; // Task IDs
     }
   ): Promise<Task> {
@@ -1059,7 +1321,10 @@ export class StateManager {
       priority: config.priority,
       status: "pending",
       execution_mode: config.execution_mode,
+      model: config.model,
       depends_on: config.depends_on ?? [],
+      cross_staging_refs: [],
+      memory_tags: [],
       order: existingTasks.length,
       createdAt: now,
       updatedAt: now,
@@ -1106,7 +1371,14 @@ export class StateManager {
     await this.save();
   }
 
-  async updateTaskDetails(taskId: string, updates: { title?: string; description?: string; priority?: "high" | "medium" | "low"; execution_mode?: "parallel" | "sequential"; depends_on?: string[] }): Promise<Task> {
+  async updateTaskDetails(taskId: string, updates: {
+    title?: string;
+    description?: string;
+    priority?: "high" | "medium" | "low";
+    execution_mode?: "parallel" | "sequential";
+    model?: ModelType;
+    depends_on?: string[];
+  }): Promise<Task> {
     const task = this.requireTask(taskId);
 
     if (task.status === "done" || task.status === "cancelled") {
@@ -1118,6 +1390,7 @@ export class StateManager {
     if (updates.description !== undefined) task.description = updates.description;
     if (updates.priority !== undefined) task.priority = updates.priority;
     if (updates.execution_mode !== undefined) task.execution_mode = updates.execution_mode;
+    if (updates.model !== undefined) task.model = updates.model;
 
     // Handle depends_on updates with circular dependency check
     if (updates.depends_on !== undefined) {

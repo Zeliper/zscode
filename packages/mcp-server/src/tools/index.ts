@@ -7,6 +7,8 @@ import { registerArchiveTool } from "./archive.js";
 import { registerCancelTool } from "./cancel.js";
 import { registerModifyTools } from "./modify.js";
 import { registerMemoryTools } from "./memory.js";
+import { registerFileTools } from "./files.js";
+import { registerSummaryTools } from "./summary.js";
 
 /**
  * Register all ZSCode MCP tools
@@ -35,4 +37,10 @@ export function registerAllTools(server: McpServer, projectRoot: string): void {
 
   // Memory tools: add_memory, list_memories, update_memory, remove_memory, get_memories_for_context, list_categories
   registerMemoryTools(server);
+
+  // File tools: zscode:read, zscode:write (for context-optimized file operations)
+  registerFileTools(server, projectRoot);
+
+  // Summary tools: generate_summary, get_project_summary, delete_project_summary
+  registerSummaryTools(server);
 }

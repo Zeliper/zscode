@@ -17,6 +17,9 @@ import {
   PlanStatusSchema,
   ExecutionTypeSchema,
   HistoryEntryTypeSchema,
+  // New model and session schemas
+  ModelTypeSchema,
+  SessionBudgetSchema,
   CreatePlanInputSchema,
   StartStagingInputSchema,
   StatusInputSchema,
@@ -24,6 +27,10 @@ import {
   CancelInputSchema,
   SaveTaskOutputInputSchema,
   UpdateTaskStatusInputSchema,
+  // Cross-reference schemas
+  CrossStagingRefSchema,
+  CrossTaskRefSchema,
+  CrossStagingTaskRefInputSchema,
   STATE_VERSION,
 } from "./schema.js";
 
@@ -43,6 +50,11 @@ export type Decision = z.infer<typeof DecisionSchema>;
 export type Memory = z.infer<typeof MemorySchema>;
 export type Context = z.infer<typeof ContextSchema>;
 
+// ============ Cross-Reference Types ============
+export type CrossStagingRef = z.infer<typeof CrossStagingRefSchema>;
+export type CrossTaskRef = z.infer<typeof CrossTaskRefSchema>;
+export type CrossStagingTaskRefInput = z.infer<typeof CrossStagingTaskRefInputSchema>;
+
 // ============ Enum Types ============
 export type TaskStatus = z.infer<typeof TaskStatusSchema>;
 export type TaskPriority = z.infer<typeof TaskPrioritySchema>;
@@ -50,6 +62,9 @@ export type StagingStatus = z.infer<typeof StagingStatusSchema>;
 export type PlanStatus = z.infer<typeof PlanStatusSchema>;
 export type ExecutionType = z.infer<typeof ExecutionTypeSchema>;
 export type HistoryEntryType = z.infer<typeof HistoryEntryTypeSchema>;
+// Model and session types for context optimization
+export type ModelType = z.infer<typeof ModelTypeSchema>;
+export type SessionBudget = z.infer<typeof SessionBudgetSchema>;
 
 // ============ Input Types ============
 export type CreatePlanInput = z.infer<typeof CreatePlanInputSchema>;
@@ -115,6 +130,7 @@ export interface TaskDetail {
   status: TaskStatus;
   priority: TaskPriority;
   execution_mode: ExecutionType;
+  model?: ModelType;
   depends_on: string[];
   hasOutput: boolean;
 }
@@ -130,15 +146,25 @@ export interface PlanDetail {
   updatedAt: string;
 }
 
+export interface SessionGuidance {
+  budget: SessionBudget | "unspecified";
+  recommendedSessions: number | null;
+  message: string;
+}
+
 export interface StartStagingResult {
   staging: {
     id: string;
     name: string;
     status: StagingStatus;
     execution_type: ExecutionType;
+    default_model?: ModelType;
+    session_budget?: SessionBudget;
+    recommended_sessions?: number;
   };
   executableTasks: TaskDetail[];
   artifactsPath: string;
+  sessionGuidance?: SessionGuidance;
 }
 
 export interface ArchiveResult {
@@ -164,3 +190,44 @@ export interface IdGenerator {
   generateDecisionId(): string;
   generateMemoryId(): string;
 }
+
+// ============ Memory Event Types ============
+export type MemoryEventType =
+  | "staging-start"
+  | "task-start"
+  | "task-complete"
+  | "staging-complete"
+  | "plan-complete";
+
+// ============ Cross-Reference Output Types ============
+export interface RelatedStagingArtifacts {
+  stagingId: string;
+  stagingName: string;
+  taskOutputs: Record<string, TaskOutput>;
+}
+
+export interface CrossReferencedTaskOutput {
+  taskId: string;
+  taskTitle: string;
+  stagingId: string;
+  output: TaskOutput | null;
+}
+
+export interface TaskStartContext {
+  event: "task-start";
+  memories: Memory[];
+  crossReferencedOutputs: CrossReferencedTaskOutput[];
+}
+
+export interface TaskCompleteContext {
+  event: "task-complete";
+  memories: Memory[];
+}
+
+export interface StagingStartContext {
+  relatedArtifacts: RelatedStagingArtifacts[];
+  appliedMemories: Memory[];
+  appliedMemoriesText: string | null;
+}
+
+export type TaskContext = TaskStartContext | TaskCompleteContext;

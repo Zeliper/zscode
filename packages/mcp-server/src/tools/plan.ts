@@ -2,7 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import { StateManager } from "../state/manager.js";
 import { withErrorHandling, ProjectNotInitializedError, TaskNotFoundError, PlanNotFoundError } from "../errors/index.js";
-import type { ExecutionType, TaskPriority } from "../state/types.js";
+import type { ExecutionType, TaskPriority, CrossReferencedTaskOutput, TaskContext, ModelType, SessionBudget } from "../state/types.js";
 
 /**
  * Register plan-related tools
@@ -20,12 +20,20 @@ export function registerPlanTools(server: McpServer): void {
         description: z.string().optional().describe("Staging description"),
         execution_type: z.enum(["parallel", "sequential"]).default("parallel")
           .describe("How tasks in this staging are executed"),
+        default_model: z.enum(["opus", "sonnet", "haiku"]).optional()
+          .describe("Default model for tasks in this staging (tasks can override)"),
+        session_budget: z.enum(["minimal", "standard", "extensive"]).optional()
+          .describe("Session budget category: minimal (~0.5), standard (~1), extensive (~2+)"),
+        recommended_sessions: z.number().min(0.5).max(10).optional()
+          .describe("Recommended number of sessions for this staging"),
         tasks: z.array(z.object({
           title: z.string().describe("Task title"),
           description: z.string().optional().describe("Task description"),
           priority: z.enum(["high", "medium", "low"]).default("medium").describe("Task priority"),
           execution_mode: z.enum(["parallel", "sequential"]).default("parallel")
             .describe("Execution mode within staging"),
+          model: z.enum(["opus", "sonnet", "haiku"]).optional()
+            .describe("Model to use for this task (overrides staging default_model)"),
           depends_on_index: z.array(z.number().int().min(0)).default([])
             .describe("Indices of tasks this task depends on (within same staging)"),
         })).describe("Tasks in this staging"),
@@ -43,11 +51,15 @@ export function registerPlanTools(server: McpServer): void {
           name: s.name,
           description: s.description,
           execution_type: s.execution_type as ExecutionType,
+          default_model: s.default_model as ModelType | undefined,
+          session_budget: s.session_budget as SessionBudget | undefined,
+          recommended_sessions: s.recommended_sessions,
           tasks: s.tasks.map(t => ({
             title: t.title,
             description: t.description,
             priority: t.priority as TaskPriority,
             execution_mode: t.execution_mode as ExecutionType,
+            model: t.model as ModelType | undefined,
             depends_on_index: t.depends_on_index,
           })),
         }));
@@ -96,12 +108,13 @@ export function registerPlanTools(server: McpServer): void {
   // ============ update_task ============
   server.tool(
     "update_task",
-    "Update a task's status. Use this to mark tasks as in_progress, done, or blocked.",
+    "Update a task's status. Use this to mark tasks as in_progress, done, or blocked. Automatically includes relevant memories and cross-referenced task outputs when transitioning to in_progress or done.",
     {
       taskId: z.string().describe("Task ID to update"),
       status: z.enum(["pending", "in_progress", "done", "blocked", "cancelled"])
         .describe("New task status"),
       notes: z.string().optional().describe("Notes about the status change"),
+      includeContext: z.boolean().default(true).describe("Include related memories and cross-referenced outputs"),
     },
     async (args) => {
       const result = await withErrorHandling(async () => {
@@ -119,6 +132,57 @@ export function registerPlanTools(server: McpServer): void {
         const previousStatus = task.status;
         await manager.updateTaskStatus(args.taskId, args.status, args.notes);
 
+        // Build context based on status transition
+        let context: TaskContext | null = null;
+
+        if (args.includeContext) {
+          if (args.status === "in_progress") {
+            // Task starting: include always-applied + task-start memories and cross-referenced outputs
+            const alwaysApplied = manager.getAlwaysAppliedMemories();
+            const taskStartMemories = manager.getMemoriesForEvent("task-start", task.memory_tags);
+
+            // Merge without duplicates, keeping priority order
+            const memoryMap = new Map<string, typeof alwaysApplied[0]>();
+            for (const m of alwaysApplied) {
+              memoryMap.set(m.id, m);
+            }
+            for (const m of taskStartMemories) {
+              memoryMap.set(m.id, m);
+            }
+
+            const memories = Array.from(memoryMap.values())
+              .sort((a, b) => b.priority - a.priority);
+            const crossRefs = manager.getCrossReferencedTaskOutputs(args.taskId);
+
+            context = {
+              event: "task-start",
+              memories,
+              crossReferencedOutputs: crossRefs,
+            };
+          } else if (args.status === "done") {
+            // Task completing: include always-applied + task-complete memories
+            const alwaysApplied = manager.getAlwaysAppliedMemories();
+            const taskCompleteMemories = manager.getMemoriesForEvent("task-complete", task.memory_tags);
+
+            // Merge without duplicates, keeping priority order
+            const memoryMap = new Map<string, typeof alwaysApplied[0]>();
+            for (const m of alwaysApplied) {
+              memoryMap.set(m.id, m);
+            }
+            for (const m of taskCompleteMemories) {
+              memoryMap.set(m.id, m);
+            }
+
+            const memories = Array.from(memoryMap.values())
+              .sort((a, b) => b.priority - a.priority);
+
+            context = {
+              event: "task-complete",
+              memories,
+            };
+          }
+        }
+
         return {
           success: true,
           message: `Task status updated: ${previousStatus} -> ${args.status}`,
@@ -129,6 +193,22 @@ export function registerPlanTools(server: McpServer): void {
             newStatus: args.status,
             notes: args.notes,
           },
+          context: context ? {
+            event: context.event,
+            memories: context.memories.map(m => ({
+              id: m.id,
+              category: m.category,
+              title: m.title,
+              content: m.content,
+              priority: m.priority,
+            })),
+            memoriesText: context.memories.length > 0
+              ? context.memories.map(m => `## [${m.category.toUpperCase()}] ${m.title}\n${m.content}`).join("\n\n")
+              : null,
+            crossReferencedOutputs: context.event === "task-start"
+              ? (context as { crossReferencedOutputs: CrossReferencedTaskOutput[] }).crossReferencedOutputs
+              : undefined,
+          } : undefined,
         };
       }, "update_task");
 

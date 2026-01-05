@@ -23,6 +23,10 @@ export const TaskPrioritySchema = z.enum(["high", "medium", "low"]);
 export const StagingStatusSchema = z.enum(["pending", "in_progress", "completed", "failed", "cancelled"]);
 export const PlanStatusSchema = z.enum(["draft", "active", "completed", "archived", "cancelled"]);
 export const ExecutionTypeSchema = z.enum(["parallel", "sequential"]);
+// Model selection for tasks (opus=complex, sonnet=balanced, haiku=fast)
+export const ModelTypeSchema = z.enum(["opus", "sonnet", "haiku"]);
+// Session budget for staging context management
+export const SessionBudgetSchema = z.enum(["minimal", "standard", "extensive"]);
 export const HistoryEntryTypeSchema = z.enum([
   "project_initialized",
   "plan_created",
@@ -49,6 +53,19 @@ export const HistoryEntryTypeSchema = z.enum([
   "session_started",
   "session_ended",
 ]);
+
+// ============ Cross-Reference Schemas ============
+// Cross-Staging Reference: Reference to another staging's artifacts
+export const CrossStagingRefSchema = z.object({
+  stagingId: StagingIdSchema,
+  taskIds: z.array(TaskIdSchema).optional(), // If undefined, include all tasks from staging
+});
+
+// Cross-Task Reference: Reference to a task in another staging
+export const CrossTaskRefSchema = z.object({
+  taskId: TaskIdSchema,
+  stagingId: StagingIdSchema,
+});
 
 // ============ Task Output Schema ============
 // Input schema for tools (completedAt is auto-generated)
@@ -80,7 +97,13 @@ export const TaskSchema = z.object({
   priority: TaskPrioritySchema.default("medium"),
   status: TaskStatusSchema.default("pending"),
   execution_mode: ExecutionTypeSchema.default("parallel"),
+  // Model to use for this task (overrides staging default_model)
+  model: ModelTypeSchema.optional(),
   depends_on: z.array(TaskIdSchema).default([]),
+  // Cross-staging task references (for accessing outputs from other stagings)
+  cross_staging_refs: z.array(CrossTaskRefSchema).default([]),
+  // Memory tags for context-specific memory lookup on task start
+  memory_tags: z.array(z.string()).default([]),
   order: z.number().int().min(0).optional(),
   notes: z.string().optional(),
   output: TaskOutputSchema.optional(),
@@ -99,7 +122,17 @@ export const StagingSchema = z.object({
   order: z.number().int().min(0),
   execution_type: ExecutionTypeSchema.default("parallel"),
   status: StagingStatusSchema.default("pending"),
+  // Default model for tasks in this staging (tasks can override)
+  default_model: ModelTypeSchema.optional(),
+  // Session budget for context management
+  session_budget: SessionBudgetSchema.optional(),
+  // Recommended number of sessions (0.5, 1, 2, etc.)
+  recommended_sessions: z.number().min(0.5).max(10).optional(),
   tasks: z.array(TaskIdSchema).default([]),
+  // Cross-staging dependencies (for including artifacts from dependent stagings)
+  depends_on_stagings: z.array(CrossStagingRefSchema).default([]),
+  // Auto-include artifacts from dependent stagings on start
+  auto_include_artifacts: z.boolean().default(true),
   artifacts_path: z.string(),
   createdAt: ISODateStringSchema,
   startedAt: ISODateStringSchema.optional(),
@@ -152,7 +185,20 @@ export const DecisionSchema = z.object({
 
 // ============ Memory Schema ============
 // Default categories (can be extended dynamically)
-export const DEFAULT_MEMORY_CATEGORIES = ["general", "planning", "coding", "review"] as const;
+export const DEFAULT_MEMORY_CATEGORIES = [
+  "general",           // Always applied
+  "planning",          // During planning phase
+  "coding",            // During coding phase
+  "review",            // During review phase
+  // Event-based categories for automatic context injection
+  "staging-start",     // Applied when staging starts
+  "task-start",        // Applied when task starts (status -> in_progress)
+  "task-complete",     // Applied when task completes (status -> done)
+  "staging-complete",  // Applied when staging completes
+  "plan-complete",     // Applied when plan completes
+  // Project-level summary category
+  "project-summary",   // Auto-generated project summary (always applied with general)
+] as const;
 
 export const MemorySchema = z.object({
   id: MemoryIdSchema,
@@ -189,6 +235,12 @@ export const StateSchema = z.object({
 });
 
 // ============ Input Schemas for Tools ============
+// Cross-staging task reference for plan creation (uses indices instead of IDs)
+export const CrossStagingTaskRefInputSchema = z.object({
+  staging_index: z.number().int().min(0),
+  task_index: z.number().int().min(0),
+});
+
 export const CreatePlanInputSchema = z.object({
   title: z.string().min(1),
   description: z.string().optional(),
@@ -196,12 +248,29 @@ export const CreatePlanInputSchema = z.object({
     name: z.string().min(1),
     description: z.string().optional(),
     execution_type: ExecutionTypeSchema.default("parallel"),
+    // Default model for tasks in this staging
+    default_model: ModelTypeSchema.optional(),
+    // Session budget for context management
+    session_budget: SessionBudgetSchema.optional(),
+    // Recommended number of sessions (0.5, 1, 2, etc.)
+    recommended_sessions: z.number().min(0.5).max(10).optional(),
+    // Staging dependencies (indices of other stagings to depend on)
+    depends_on_staging_indices: z.array(z.number().int().min(0)).default([]),
+    // Auto-include artifacts from dependent stagings
+    auto_include_artifacts: z.boolean().default(true),
     tasks: z.array(z.object({
       title: z.string().min(1),
       description: z.string().optional(),
       priority: TaskPrioritySchema.default("medium"),
       execution_mode: ExecutionTypeSchema.default("parallel"),
+      // Model to use for this task (overrides staging default_model)
+      model: ModelTypeSchema.optional(),
+      // Task dependencies within the same staging
       depends_on_index: z.array(z.number().int().min(0)).default([]),
+      // Cross-staging task references (staging_index, task_index)
+      cross_staging_task_refs: z.array(CrossStagingTaskRefInputSchema).default([]),
+      // Memory tags for context-specific memory lookup
+      memory_tags: z.array(z.string()).default([]),
     })),
   })),
 });

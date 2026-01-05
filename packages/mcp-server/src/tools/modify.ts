@@ -73,6 +73,12 @@ export function registerModifyTools(server: McpServer): void {
       name: z.string().optional().describe("New staging name"),
       description: z.string().optional().describe("New staging description"),
       execution_type: z.enum(["parallel", "sequential"]).optional().describe("New execution type"),
+      default_model: z.enum(["opus", "sonnet", "haiku"]).optional()
+        .describe("Default model for tasks in this staging"),
+      session_budget: z.enum(["minimal", "standard", "extensive"]).optional()
+        .describe("Session budget category"),
+      recommended_sessions: z.number().min(0.5).max(10).optional()
+        .describe("Recommended number of sessions"),
     },
     async (args) => {
       const result = await withErrorHandling(async () => {
@@ -82,7 +88,8 @@ export function registerModifyTools(server: McpServer): void {
           throw new ProjectNotInitializedError();
         }
 
-        if (!args.name && !args.description && !args.execution_type) {
+        if (!args.name && !args.description && !args.execution_type &&
+            !args.default_model && !args.session_budget && args.recommended_sessions === undefined) {
           throw new ValidationError("At least one update field must be provided");
         }
 
@@ -90,6 +97,9 @@ export function registerModifyTools(server: McpServer): void {
           name: args.name,
           description: args.description,
           execution_type: args.execution_type,
+          default_model: args.default_model,
+          session_budget: args.session_budget,
+          recommended_sessions: args.recommended_sessions,
         });
 
         return {
@@ -100,6 +110,9 @@ export function registerModifyTools(server: McpServer): void {
             name: staging.name,
             description: staging.description,
             execution_type: staging.execution_type,
+            default_model: staging.default_model,
+            session_budget: staging.session_budget,
+            recommended_sessions: staging.recommended_sessions,
             status: staging.status,
           },
         };
@@ -127,6 +140,12 @@ export function registerModifyTools(server: McpServer): void {
       name: z.string().describe("Staging name"),
       description: z.string().optional().describe("Staging description"),
       execution_type: z.enum(["parallel", "sequential"]).default("parallel").describe("How tasks execute"),
+      default_model: z.enum(["opus", "sonnet", "haiku"]).optional()
+        .describe("Default model for tasks in this staging"),
+      session_budget: z.enum(["minimal", "standard", "extensive"]).optional()
+        .describe("Session budget category"),
+      recommended_sessions: z.number().min(0.5).max(10).optional()
+        .describe("Recommended number of sessions"),
       insertAt: z.number().int().min(0).optional().describe("Position to insert (0-indexed). If not provided, adds at end."),
     },
     async (args) => {
@@ -141,6 +160,9 @@ export function registerModifyTools(server: McpServer): void {
           name: args.name,
           description: args.description,
           execution_type: args.execution_type,
+          default_model: args.default_model,
+          session_budget: args.session_budget,
+          recommended_sessions: args.recommended_sessions,
           insertAt: args.insertAt,
         });
 
@@ -154,6 +176,9 @@ export function registerModifyTools(server: McpServer): void {
             name: staging.name,
             order: staging.order,
             execution_type: staging.execution_type,
+            default_model: staging.default_model,
+            session_budget: staging.session_budget,
+            recommended_sessions: staging.recommended_sessions,
           },
           plan: {
             id: plan!.id,
@@ -241,6 +266,8 @@ export function registerModifyTools(server: McpServer): void {
       description: z.string().optional().describe("Task description"),
       priority: z.enum(["high", "medium", "low"]).default("medium").describe("Task priority"),
       execution_mode: z.enum(["parallel", "sequential"]).default("parallel").describe("Execution mode"),
+      model: z.enum(["opus", "sonnet", "haiku"]).optional()
+        .describe("Model to use for this task (overrides staging default_model)"),
       depends_on: z.array(z.string()).default([]).describe("Task IDs this task depends on"),
     },
     async (args) => {
@@ -256,6 +283,7 @@ export function registerModifyTools(server: McpServer): void {
           description: args.description,
           priority: args.priority,
           execution_mode: args.execution_mode,
+          model: args.model,
           depends_on: args.depends_on,
         });
 
@@ -268,6 +296,7 @@ export function registerModifyTools(server: McpServer): void {
             id: task.id,
             title: task.title,
             priority: task.priority,
+            model: task.model,
             order: task.order,
           },
           staging: {
@@ -348,13 +377,15 @@ export function registerModifyTools(server: McpServer): void {
   // ============ update_task_details ============
   server.tool(
     "update_task_details",
-    "Update a task's details (title, description, priority, execution_mode, depends_on). Cannot modify done or cancelled tasks. Use update_task for status changes.",
+    "Update a task's details (title, description, priority, execution_mode, model, depends_on). Cannot modify done or cancelled tasks. Use update_task for status changes.",
     {
       taskId: z.string().describe("Task ID to update"),
       title: z.string().optional().describe("New task title"),
       description: z.string().optional().describe("New task description"),
       priority: z.enum(["high", "medium", "low"]).optional().describe("New priority"),
       execution_mode: z.enum(["parallel", "sequential"]).optional().describe("New execution mode"),
+      model: z.enum(["opus", "sonnet", "haiku"]).optional()
+        .describe("Model to use for this task"),
       depends_on: z.array(z.string()).optional().describe("New task dependencies (task IDs within the same staging). Pass empty array to remove all dependencies."),
     },
     async (args) => {
@@ -365,7 +396,7 @@ export function registerModifyTools(server: McpServer): void {
           throw new ProjectNotInitializedError();
         }
 
-        if (!args.title && !args.description && !args.priority && !args.execution_mode && args.depends_on === undefined) {
+        if (!args.title && !args.description && !args.priority && !args.execution_mode && !args.model && args.depends_on === undefined) {
           throw new ValidationError("At least one update field must be provided");
         }
 
@@ -374,6 +405,7 @@ export function registerModifyTools(server: McpServer): void {
           description: args.description,
           priority: args.priority,
           execution_mode: args.execution_mode,
+          model: args.model,
           depends_on: args.depends_on,
         });
 
@@ -386,6 +418,7 @@ export function registerModifyTools(server: McpServer): void {
             description: task.description,
             priority: task.priority,
             execution_mode: task.execution_mode,
+            model: task.model,
             depends_on: task.depends_on,
             status: task.status,
           },
