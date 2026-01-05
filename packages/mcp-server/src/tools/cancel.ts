@@ -7,6 +7,7 @@ import {
   PlanNotFoundError,
   PlanInvalidStateError,
 } from "../errors/index.js";
+import { textResponse, textErrorResponse, formatPlanCancelled } from "../utils/format.js";
 
 /**
  * Register cancel tool
@@ -45,44 +46,27 @@ export function registerCancelTool(server: McpServer): void {
         }
 
         // Cancel the plan
-        const { affectedStagings, affectedTasks } = await manager.cancelPlan(
-          args.planId,
-          args.reason
-        );
+        await manager.cancelPlan(args.planId, args.reason);
 
         // Optionally archive
-        let archivePath: string | undefined;
         if (args.archiveImmediately) {
-          archivePath = await manager.archivePlan(args.planId, args.reason);
+          await manager.archivePlan(args.planId, args.reason);
         }
 
         return {
           success: true,
-          message: `Plan "${plan.title}" cancelled`,
-          cancel: {
-            planId: plan.id,
-            title: plan.title,
-            reason: args.reason,
-            cancelledAt: new Date().toISOString(),
-          },
-          affected: {
-            stagings: affectedStagings,
-            tasks: affectedTasks,
-          },
+          title: plan.title,
           archived: args.archiveImmediately,
-          archivePath,
         };
       }, "zscode:cancel");
 
       if (result.success) {
-        return {
-          content: [{ type: "text" as const, text: JSON.stringify(result.data, null, 2) }],
-        };
+        const msg = result.data.archived
+          ? `${formatPlanCancelled(result.data.title)} (archived)`
+          : formatPlanCancelled(result.data.title);
+        return textResponse(msg);
       } else {
-        return {
-          content: [{ type: "text" as const, text: JSON.stringify(result.error, null, 2) }],
-          isError: true,
-        };
+        return textErrorResponse(result.error.message);
       }
     }
   );

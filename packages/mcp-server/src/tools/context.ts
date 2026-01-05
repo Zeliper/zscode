@@ -2,7 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import { StateManager } from "../state/manager.js";
 import { withErrorHandling } from "../errors/index.js";
-import { createResponse, createErrorResponse } from "../utils/format.js";
+import { createResponse, createErrorResponse, textResponse, textErrorResponse, formatContextSummary, formatDecisionAdded } from "../utils/format.js";
 
 /**
  * Register context-related tools
@@ -13,14 +13,16 @@ export function registerContextTools(server: McpServer, projectRoot: string): vo
     "get_full_context",
     "Get the full project context including all plans, stagings, tasks, and history. Use this to understand the current state of the project.",
     {
-      lightweight: z.boolean().default(false)
-        .describe("If true, return only IDs and status for plans/stagings/tasks (reduces context by ~70%)"),
+      lightweight: z.boolean().default(true)
+        .describe("If true, return only IDs and status for plans/stagings/tasks (reduces context by ~70%). Default true."),
       includeOutputs: z.boolean().default(false)
         .describe("If true, include task outputs (can be large). Default false for reduced context."),
       includeHistory: z.boolean().default(false)
         .describe("If true, include recent history entries. Default false."),
       includeDecisions: z.boolean().default(false)
         .describe("If true, include decisions. Default false."),
+      json: z.boolean().default(false)
+        .describe("If true, return full JSON. Default false returns human-readable summary."),
     },
     async (args) => {
       const result = await withErrorHandling(async () => {
@@ -130,9 +132,40 @@ export function registerContextTools(server: McpServer, projectRoot: string): vo
       }, "get_full_context");
 
       if (result.success) {
-        return createResponse(result.data);
+        if (args.json) {
+          return createResponse(result.data);
+        }
+        // Default: Human-readable summary
+        const data = result.data;
+        if (!data.initialized) {
+          return textResponse("⚠️ Project not initialized. Run 'npx zscode init' to initialize.");
+        }
+
+        // Find current plan/staging names
+        let currentPlanTitle: string | undefined;
+        let currentStagingName: string | undefined;
+        if (data.currentPlanId && data.plans) {
+          const plan = data.plans[data.currentPlanId];
+          currentPlanTitle = plan?.title;
+        }
+        if (data.currentStagingId && data.stagings) {
+          const staging = data.stagings[data.currentStagingId];
+          currentStagingName = staging?.name;
+        }
+
+        return textResponse(formatContextSummary({
+          projectName: data.project?.name || "Unknown",
+          totalPlans: data.overview?.totalPlans || 0,
+          activePlans: data.overview?.activePlans || 0,
+          completedPlans: data.overview?.completedPlans || 0,
+          currentPlan: currentPlanTitle,
+          currentStaging: currentStagingName,
+        }));
       } else {
-        return createErrorResponse(result.error);
+        if (args.json) {
+          return createErrorResponse(result.error);
+        }
+        return textErrorResponse(result.error.message);
       }
     }
   );
@@ -160,7 +193,7 @@ export function registerContextTools(server: McpServer, projectRoot: string): vo
           };
         }
 
-        const project = await manager.initializeProject(
+        await manager.initializeProject(
           args.name,
           args.description,
           args.goals,
@@ -169,20 +202,14 @@ export function registerContextTools(server: McpServer, projectRoot: string): vo
 
         return {
           success: true,
-          message: `Project "${args.name}" initialized successfully`,
-          project,
+          name: args.name,
         };
       }, "init_project");
 
       if (result.success) {
-        return {
-          content: [{ type: "text" as const, text: JSON.stringify(result.data, null, 2) }],
-        };
+        return textResponse(`✅ Project **${result.data.name}** initialized`);
       } else {
-        return {
-          content: [{ type: "text" as const, text: JSON.stringify(result.error, null, 2) }],
-          isError: true,
-        };
+        return textErrorResponse(result.error.message);
       }
     }
   );
@@ -206,7 +233,7 @@ export function registerContextTools(server: McpServer, projectRoot: string): vo
           throw new Error("Project not initialized");
         }
 
-        const decision = await manager.addDecision(
+        await manager.addDecision(
           args.title,
           args.decision,
           args.rationale,
@@ -216,20 +243,14 @@ export function registerContextTools(server: McpServer, projectRoot: string): vo
 
         return {
           success: true,
-          message: "Decision recorded",
-          decision,
+          title: args.title,
         };
       }, "add_decision");
 
       if (result.success) {
-        return {
-          content: [{ type: "text" as const, text: JSON.stringify(result.data, null, 2) }],
-        };
+        return textResponse(formatDecisionAdded(result.data.title));
       } else {
-        return {
-          content: [{ type: "text" as const, text: JSON.stringify(result.error, null, 2) }],
-          isError: true,
-        };
+        return textErrorResponse(result.error.message);
       }
     }
   );

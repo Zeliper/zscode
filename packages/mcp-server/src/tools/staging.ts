@@ -11,6 +11,13 @@ import {
   TaskNotFoundError,
 } from "../errors/index.js";
 import type { TaskOutput, Memory, RelatedStagingArtifacts, SessionBudget, SessionGuidance } from "../state/types.js";
+import {
+  textResponse,
+  textErrorResponse,
+  formatStagingComplete,
+  formatTaskOutputSaved,
+  getStatusIcon,
+} from "../utils/format.js";
 
 /**
  * Register staging-related tools
@@ -27,6 +34,7 @@ export function registerStagingTools(server: McpServer, projectRoot: string): vo
       stagingId: z.string().describe("Staging ID to start (e.g., staging-0001)"),
       includeArtifacts: z.boolean().default(true).describe("Include artifacts from dependent stagings"),
       includeMemories: z.boolean().default(true).describe("Include relevant staging-start memories"),
+      json: z.boolean().default(false).describe("If true, return JSON instead of human-readable text"),
     },
     async (args) => {
       const result = await withErrorHandling(async () => {
@@ -154,14 +162,34 @@ export function registerStagingTools(server: McpServer, projectRoot: string): vo
       }, "zscode:start");
 
       if (result.success) {
-        return {
-          content: [{ type: "text" as const, text: JSON.stringify(result.data, null, 2) }],
-        };
+        if (args.json) {
+          return { content: [{ type: "text" as const, text: JSON.stringify(result.data, null, 2) }] };
+        }
+        // Default: Human-readable format
+        const data = result.data;
+        const taskLines = data.tasks.executable.map((t: { title: string; status?: string; priority: string }) =>
+          `   ${getStatusIcon(t.status || "pending")} ${t.title} [${t.priority}]`
+        ).join("\n");
+
+        const lines = [
+          `🚀 Started: **${data.staging.name}**`,
+        ];
+        if (data.staging.description) {
+          lines.push(`   ${data.staging.description}`);
+        }
+        lines.push(`   Tasks: ${data.tasks.executable.length}/${data.tasks.total} ready`);
+        if (data.sessionGuidance?.budget) {
+          lines.push(`   Budget: ${data.sessionGuidance.budget}`);
+        }
+        if (taskLines) {
+          lines.push("", "**Executable Tasks:**", taskLines);
+        }
+        return textResponse(lines.join("\n"));
       } else {
-        return {
-          content: [{ type: "text" as const, text: JSON.stringify(result.error, null, 2) }],
-          isError: true,
-        };
+        if (args.json) {
+          return { content: [{ type: "text" as const, text: JSON.stringify(result.error, null, 2) }], isError: true };
+        }
+        return textErrorResponse(result.error.message);
       }
     }
   );
@@ -190,24 +218,14 @@ export function registerStagingTools(server: McpServer, projectRoot: string): vo
 
         return {
           success: true,
-          message: `Staging "${staging.name}" completed`,
-          staging: {
-            id: staging.id,
-            name: staging.name,
-            status: "completed",
-          },
+          name: staging.name,
         };
       }, "complete_staging");
 
       if (result.success) {
-        return {
-          content: [{ type: "text" as const, text: JSON.stringify(result.data, null, 2) }],
-        };
+        return textResponse(formatStagingComplete(result.data.name));
       } else {
-        return {
-          content: [{ type: "text" as const, text: JSON.stringify(result.error, null, 2) }],
-          isError: true,
-        };
+        return textErrorResponse(result.error.message);
       }
     }
   );
@@ -254,7 +272,7 @@ export function registerStagingTools(server: McpServer, projectRoot: string): vo
         await manager.saveTaskOutput(args.taskId, output);
 
         // Save to artifacts file
-        const outputPath = await artifactsManager.saveTaskOutput(
+        await artifactsManager.saveTaskOutput(
           args.planId,
           args.stagingId,
           args.taskId,
@@ -263,25 +281,15 @@ export function registerStagingTools(server: McpServer, projectRoot: string): vo
 
         return {
           success: true,
-          message: "Task output saved",
-          task: {
-            id: task.id,
-            title: task.title,
-          },
-          outputPath,
-          output,
+          taskTitle: task.title,
+          status: output.status,
         };
       }, "save_task_output");
 
       if (result.success) {
-        return {
-          content: [{ type: "text" as const, text: JSON.stringify(result.data, null, 2) }],
-        };
+        return textResponse(formatTaskOutputSaved(result.data.taskTitle, result.data.status));
       } else {
-        return {
-          content: [{ type: "text" as const, text: JSON.stringify(result.error, null, 2) }],
-          isError: true,
-        };
+        return textErrorResponse(result.error.message);
       }
     }
   );
@@ -376,14 +384,37 @@ export function registerStagingTools(server: McpServer, projectRoot: string): vo
       }, "get_staging_artifacts");
 
       if (result.success) {
-        return {
-          content: [{ type: "text" as const, text: JSON.stringify(result.data, null, 2) }],
-        };
+        // Artifacts need to return data for processing, but in compact format
+        const data = result.data;
+        if (data.taskOutput) {
+          // Single task output
+          const output = data.taskOutput;
+          const statusIcon = output?.status === "success" ? "✅" : output?.status === "partial" ? "⚠️" : "❌";
+          const lines = [
+            `📦 **${data.staging.name}** artifacts`,
+            `${statusIcon} Status: ${output?.status || "none"}`,
+            output?.summary ? `   ${output.summary}` : "",
+          ].filter(Boolean);
+          return textResponse(lines.join("\n"));
+        } else {
+          // All task outputs - show summary
+          const outputCount = Object.keys(data.taskOutputs || {}).length;
+          const fileCount = (data.files || []).length;
+          const lines = [
+            `📦 **${data.staging.name}** artifacts`,
+            `   Outputs: ${outputCount} tasks`,
+            `   Files: ${fileCount}`,
+          ];
+          // Show task summaries
+          for (const [taskId, output] of Object.entries(data.taskOutputs || {})) {
+            const o = output as { status: string; summary: string };
+            const icon = o.status === "success" ? "✅" : o.status === "partial" ? "⚠️" : "❌";
+            lines.push(`   ${icon} ${taskId}: ${o.summary?.substring(0, 50) || "no summary"}${o.summary?.length > 50 ? "..." : ""}`);
+          }
+          return textResponse(lines.join("\n"));
+        }
       } else {
-        return {
-          content: [{ type: "text" as const, text: JSON.stringify(result.error, null, 2) }],
-          isError: true,
-        };
+        return textErrorResponse(result.error.message);
       }
     }
   );

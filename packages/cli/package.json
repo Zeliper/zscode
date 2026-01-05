@@ -1,6 +1,6 @@
 {
   "name": "@zeliper/zscode",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "ZSCode CLI - Initialize and manage ZSCode Planning System in your projects",
   "publishConfig": {
     "access": "public"

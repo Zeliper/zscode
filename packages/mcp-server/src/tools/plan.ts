@@ -3,6 +3,7 @@ import { z } from "zod";
 import { StateManager } from "../state/manager.js";
 import { withErrorHandling, ProjectNotInitializedError, TaskNotFoundError, PlanNotFoundError } from "../errors/index.js";
 import type { ExecutionType, TaskPriority, CrossReferencedTaskOutput, TaskContext, ModelType, SessionBudget } from "../state/types.js";
+import { textResponse, textErrorResponse, formatPlanCreated, formatTaskUpdate, getStatusIcon } from "../utils/format.js";
 
 /**
  * Register plan-related tools
@@ -93,14 +94,10 @@ export function registerPlanTools(server: McpServer): void {
       }, "create_plan");
 
       if (result.success) {
-        return {
-          content: [{ type: "text" as const, text: JSON.stringify(result.data, null, 2) }],
-        };
+        const d = result.data;
+        return textResponse(formatPlanCreated(d.plan.id, d.plan.title, d.plan.stagings.length, d.plan.stagings.reduce((sum: number, s: { taskCount: number }) => sum + s.taskCount, 0)));
       } else {
-        return {
-          content: [{ type: "text" as const, text: JSON.stringify(result.error, null, 2) }],
-          isError: true,
-        };
+        return textErrorResponse(result.error.message);
       }
     }
   );
@@ -213,14 +210,10 @@ export function registerPlanTools(server: McpServer): void {
       }, "update_task");
 
       if (result.success) {
-        return {
-          content: [{ type: "text" as const, text: JSON.stringify(result.data, null, 2) }],
-        };
+        const d = result.data;
+        return textResponse(formatTaskUpdate(d.task.id, d.task.title, d.task.previousStatus, d.task.newStatus));
       } else {
-        return {
-          content: [{ type: "text" as const, text: JSON.stringify(result.error, null, 2) }],
-          isError: true,
-        };
+        return textErrorResponse(result.error.message);
       }
     }
   );
@@ -281,9 +274,7 @@ export function registerPlanTools(server: McpServer): void {
 
         return {
           success: true,
-          message: "Plan synchronized",
           plan: {
-            id: updatedPlan.id,
             title: updatedPlan.title,
             status: updatedPlan.status,
           },
@@ -292,14 +283,13 @@ export function registerPlanTools(server: McpServer): void {
       }, "sync_plan");
 
       if (result.success) {
-        return {
-          content: [{ type: "text" as const, text: JSON.stringify(result.data, null, 2) }],
-        };
+        const d = result.data;
+        const stagingSummary = d.stagings.map((s: { name: string; status: string; completedTasks: number; totalTasks: number }) =>
+          `   ${getStatusIcon(s.status)} ${s.name}: ${s.completedTasks}/${s.totalTasks}`
+        ).join("\n");
+        return textResponse(`${getStatusIcon(d.plan.status)} **${d.plan.title}** synced → ${d.plan.status}\n${stagingSummary}`);
       } else {
-        return {
-          content: [{ type: "text" as const, text: JSON.stringify(result.error, null, 2) }],
-          isError: true,
-        };
+        return textErrorResponse(result.error.message);
       }
     }
   );

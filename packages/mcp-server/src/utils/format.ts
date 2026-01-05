@@ -165,7 +165,7 @@ export function formatMemoryList(memories: Array<{ id: string; category: string;
 
 // ============ Helper functions ============
 
-function getStatusIcon(status: string): string {
+export function getStatusIcon(status: string): string {
   const icons: Record<string, string> = {
     // Plan status
     draft: "📝",
@@ -199,3 +199,157 @@ export function formatSize(bytes: number): string {
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
+
+// ============ Text response helpers ============
+
+/**
+ * Create MCP tool response with plain text (default for user-facing output)
+ */
+export function textResponse(text: string) {
+  return {
+    content: [{ type: "text" as const, text }],
+  };
+}
+
+/**
+ * Create MCP tool error response with plain text
+ */
+export function textErrorResponse(message: string) {
+  return {
+    content: [{ type: "text" as const, text: `❌ Error: ${message}` }],
+    isError: true,
+  };
+}
+
+// ============ Staging formatters ============
+
+export interface StagingStartInfo {
+  name: string;
+  description?: string;
+  taskCount: number;
+  executableCount: number;
+  sessionBudget?: string;
+}
+
+export function formatStagingStart(info: StagingStartInfo): string {
+  const lines = [
+    `🚀 Started: **${info.name}**`,
+  ];
+  if (info.description) {
+    lines.push(`   ${info.description}`);
+  }
+  lines.push(`   Tasks: ${info.executableCount}/${info.taskCount} ready`);
+  if (info.sessionBudget) {
+    lines.push(`   Budget: ${info.sessionBudget}`);
+  }
+  return lines.join("\n");
+}
+
+export function formatStagingComplete(name: string): string {
+  return `✅ Staging completed: **${name}**`;
+}
+
+// ============ Task formatters ============
+
+export interface TaskInfo {
+  id: string;
+  title: string;
+  status: string;
+  priority?: string;
+}
+
+export function formatTaskList(tasks: TaskInfo[]): string {
+  if (tasks.length === 0) return "No tasks.";
+
+  return tasks.map(t => {
+    const icon = getStatusIcon(t.status);
+    const priority = t.priority ? ` [${t.priority}]` : "";
+    return `${icon} ${t.title}${priority}`;
+  }).join("\n");
+}
+
+export function formatTaskOutputSaved(taskTitle: string, status: string): string {
+  const icon = status === "success" ? "✅" : status === "partial" ? "⚠️" : "❌";
+  return `${icon} Output saved: **${taskTitle}** (${status})`;
+}
+
+// ============ Context formatters ============
+
+export interface ContextSummary {
+  projectName: string;
+  totalPlans: number;
+  activePlans: number;
+  completedPlans: number;
+  currentPlan?: string;
+  currentStaging?: string;
+}
+
+export function formatContextSummary(ctx: ContextSummary): string {
+  const lines = [
+    `📁 **${ctx.projectName}**`,
+    `   Plans: ${ctx.activePlans} active, ${ctx.completedPlans} completed (${ctx.totalPlans} total)`,
+  ];
+  if (ctx.currentPlan) {
+    lines.push(`   Current: ${ctx.currentPlan}`);
+    if (ctx.currentStaging) {
+      lines.push(`   Staging: ${ctx.currentStaging}`);
+    }
+  }
+  return lines.join("\n");
+}
+
+// ============ Plan formatters ============
+
+export function formatPlanSync(title: string, status: string, stagingsSummary: string): string {
+  const icon = getStatusIcon(status);
+  return `${icon} **${title}** synced → ${status}\n${stagingsSummary}`;
+}
+
+export function formatPlanArchived(title: string): string {
+  return `📦 Plan archived: **${title}**`;
+}
+
+export function formatPlanCancelled(title: string): string {
+  return `❌ Plan cancelled: **${title}**`;
+}
+
+export function formatPlanUnarchived(title: string): string {
+  return `📂 Plan restored: **${title}**`;
+}
+
+// ============ Decision formatter ============
+
+export function formatDecisionAdded(title: string): string {
+  return `📋 Decision recorded: **${title}**`;
+}
+
+// ============ Memory formatters ============
+
+export function formatMemoryAdded(title: string, category: string): string {
+  return `💾 Memory added: **${title}** [${category}]`;
+}
+
+export function formatMemoryUpdated(title: string): string {
+  return `✏️ Memory updated: **${title}**`;
+}
+
+export function formatMemoryRemoved(title: string): string {
+  return `🗑️ Memory removed: **${title}**`;
+}
+
+// ============ Summary formatter ============
+
+export function formatSummaryGenerated(): string {
+  return `📄 Project summary generated/updated`;
+}
+
+// ============ File formatters ============
+
+export function formatFileRead(path: string, size: number): string {
+  return `📖 Read: ${path} (${formatSize(size)})`;
+}
+
+export function formatFileWritten(path: string): string {
+  return `📝 Written: ${path}`;
+}
+

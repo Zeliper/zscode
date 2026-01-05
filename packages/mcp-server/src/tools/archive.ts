@@ -7,6 +7,7 @@ import {
   PlanNotFoundError,
   PlanInvalidStateError,
 } from "../errors/index.js";
+import { textResponse, textErrorResponse, formatPlanArchived, formatPlanUnarchived } from "../utils/format.js";
 
 /**
  * Register archive tool
@@ -54,35 +55,18 @@ export function registerArchiveTool(server: McpServer): void {
         }
 
         // Archive the plan
-        const archivePath = await manager.archivePlan(args.planId, args.reason);
+        await manager.archivePlan(args.planId, args.reason);
 
         return {
           success: true,
-          message: `Plan "${plan.title}" archived successfully`,
-          archive: {
-            planId: plan.id,
-            title: plan.title,
-            archivePath,
-            archivedAt: new Date().toISOString(),
-            reason: args.reason,
-          },
-          stats: {
-            stagings: stagings.length,
-            totalTasks,
-            completedTasks,
-          },
+          title: plan.title,
         };
       }, "zscode:archive");
 
       if (result.success) {
-        return {
-          content: [{ type: "text" as const, text: JSON.stringify(result.data, null, 2) }],
-        };
+        return textResponse(formatPlanArchived(result.data.title));
       } else {
-        return {
-          content: [{ type: "text" as const, text: JSON.stringify(result.error, null, 2) }],
-          isError: true,
-        };
+        return textErrorResponse(result.error.message);
       }
     }
   );
@@ -128,35 +112,18 @@ export function registerArchiveTool(server: McpServer): void {
         }
 
         // Unarchive the plan
-        const { plan: restoredPlan, restoredPath } = await manager.unarchivePlan(args.planId);
+        const { plan: restoredPlan } = await manager.unarchivePlan(args.planId);
 
         return {
           success: true,
-          message: `Plan "${restoredPlan.title}" restored from archive`,
-          plan: {
-            id: restoredPlan.id,
-            title: restoredPlan.title,
-            status: restoredPlan.status,
-            restoredPath,
-            restoredAt: new Date().toISOString(),
-          },
-          stats: {
-            stagings: stagings.length,
-            totalTasks,
-            completedTasks,
-          },
+          title: restoredPlan.title,
         };
       }, "zscode:unarchive");
 
       if (result.success) {
-        return {
-          content: [{ type: "text" as const, text: JSON.stringify(result.data, null, 2) }],
-        };
+        return textResponse(formatPlanUnarchived(result.data.title));
       } else {
-        return {
-          content: [{ type: "text" as const, text: JSON.stringify(result.error, null, 2) }],
-          isError: true,
-        };
+        return textErrorResponse(result.error.message);
       }
     }
   );

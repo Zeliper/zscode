@@ -19,7 +19,7 @@ export function registerStatusTool(server: McpServer): void {
     "Get the status of all plans or a specific plan. Shows progress, current staging, and task completion. Use without planId for overview, with planId for detailed view.",
     {
       planId: z.string().optional().describe("Plan ID for detailed status (omit for overview of all plans)"),
-      readable: z.boolean().default(false).describe("If true, return human-readable markdown instead of JSON"),
+      json: z.boolean().default(false).describe("If true, return JSON instead of human-readable text"),
     },
     async (args) => {
       const result = await withErrorHandling(async () => {
@@ -39,14 +39,18 @@ export function registerStatusTool(server: McpServer): void {
       }, "zscode:status");
 
       if (result.success) {
-        // Human-readable format
-        if (args.readable) {
-          const text = formatStatusAsMarkdown(result.data);
-          return { content: [{ type: "text" as const, text }] };
+        // JSON format only if explicitly requested
+        if (args.json) {
+          return createResponse(result.data);
         }
-        return createResponse(result.data);
+        // Default: Human-readable format
+        const text = formatStatusAsMarkdown(result.data);
+        return { content: [{ type: "text" as const, text }] };
       } else {
-        return createErrorResponse(result.error);
+        if (args.json) {
+          return createErrorResponse(result.error);
+        }
+        return { content: [{ type: "text" as const, text: `❌ ${result.error.message}` }], isError: true };
       }
     }
   );
