@@ -121,33 +121,111 @@ This command enters planning mode for the current project.
 ## Behavior
 
 1. If a task description is provided:
-   - Analyze the task
+   - Analyze the task and explore the codebase as needed
    - Create a new Plan with appropriate Stagings and Tasks
-   - Present the plan for review
+   - Present the plan for user review
+   - **STOP after plan creation - DO NOT start execution**
 
 2. If no task description:
    - Show current project status using \`zscode:status\`
    - List active and pending plans
 
+## ⚠️ IMPORTANT: Planning Only
+
+**This command is for PLANNING ONLY.** After creating a plan:
+- Present the plan to the user for review
+- Wait for user approval or modifications
+- DO NOT automatically start any staging or execute tasks
+- User must explicitly use \`zscode:start\` to begin execution
+
 ## Available MCP Tools
 
 - \`get_full_context\` - Get complete project state
 - \`create_plan\` - Create a new plan with stagings and tasks
-- \`zscode:start planId stagingId\` - Start a specific staging
 - \`zscode:status [planId]\` - Get status of all plans or specific plan
-- \`zscode:archive planId\` - Archive a completed/cancelled plan
-- \`zscode:cancel planId\` - Cancel an active plan
+
+## Execution Commands (NOT part of planning)
+
+These commands are used AFTER planning, when user explicitly requests execution:
+- \`zscode:start planId stagingId\` - Start a specific staging
 - \`update_task\` - Update task status
 - \`save_task_output\` - Save task output/artifacts
 - \`get_staging_artifacts\` - Get previous staging outputs
+- \`zscode:archive planId\` - Archive a completed/cancelled plan
+- \`zscode:cancel planId\` - Cancel an active plan
 
 ## Workflow
 
-1. Create a plan: Define stagings (phases) with tasks
-2. Start staging: \`zscode:start plan-xxx staging-0001\`
-3. Work on tasks: Update status as you complete them
-4. Save outputs: Store results for next staging to use
-5. Complete: Archive when done
+1. **Plan** (this command): Create and review the plan
+2. **User Review**: User reviews and approves the plan
+3. **Execute** (separate step): User runs \`zscode:start\` to begin
+`;
+}
+
+/**
+ * Create zscode-summary.md slash command
+ */
+function createSummaryCommand(): string {
+  return `# ZSCode Summary
+
+Generate or update the project summary that is automatically injected into context.
+
+## Usage
+
+\`\`\`
+/zscode-summary [action]
+\`\`\`
+
+## Actions
+
+If no action is specified, generates/updates the project summary.
+
+## What It Does
+
+1. **First Run**: Creates a \`project-summary\` memory containing:
+   - Project name and description
+   - Goals and constraints
+   - Current status (active plans, completed plans, task counts)
+   - Active work details (current staging, in-progress tasks)
+   - Key rules (high-priority memories)
+   - Recent decisions
+
+2. **Subsequent Runs**: Updates the summary with current project state
+
+## Auto-Injection
+
+The project summary is automatically included in:
+- \`get_full_context\` responses (along with general memories)
+- \`zscode:start\` responses when starting a staging
+- \`update_task\` responses when tasks transition to \`in_progress\`
+
+This means the summary acts like a dynamic CLAUDE.md that always reflects current project state.
+
+## MCP Tools
+
+| Tool | Description |
+|------|-------------|
+| \`generate_summary\` | Create or update the project summary |
+| \`get_project_summary\` | View current summary content |
+| \`delete_project_summary\` | Remove the summary |
+
+## Custom Content
+
+You can provide custom content instead of auto-generated summary:
+
+\`\`\`
+generate_summary:
+  customContent: "Your custom project overview here..."
+\`\`\`
+
+## Best Practices
+
+1. Run \`/zscode:summary\` at the start of each session to update context
+2. Run after completing major plan phases
+3. Keep the summary concise - it's included in every context load
+4. Use for critical project information that should always be available
+
+ARGUMENTS: $ARGUMENTS
 `;
 }
 
@@ -353,6 +431,7 @@ export async function initCommand(options: InitOptions): Promise<void> {
   try {
     const planningCommand = createPlanningCommand();
     const memoryCommand = createMemoryCommand();
+    const summaryCommand = createSummaryCommand();
     await writeFile(
       joinPath(getCommandsDir(cwd), "zscode-planning.md"),
       planningCommand,
@@ -361,6 +440,11 @@ export async function initCommand(options: InitOptions): Promise<void> {
     await writeFile(
       joinPath(getCommandsDir(cwd), "zscode-memory.md"),
       memoryCommand,
+      "utf-8"
+    );
+    await writeFile(
+      joinPath(getCommandsDir(cwd), "zscode-summary.md"),
+      summaryCommand,
       "utf-8"
     );
     spinner.succeed("Slash commands created");
