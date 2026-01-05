@@ -86,4 +86,78 @@ export function registerArchiveTool(server: McpServer): void {
       }
     }
   );
+
+  // ============ zscode:unarchive ============
+  server.tool(
+    "zscode:unarchive",
+    "Restore an archived plan back to completed status. Moves the plan and all its artifacts from the archive directory back to the plans directory.",
+    {
+      planId: z.string().describe("Plan ID to unarchive"),
+    },
+    async (args) => {
+      const result = await withErrorHandling(async () => {
+        const manager = StateManager.getInstance();
+
+        if (!manager.isInitialized()) {
+          throw new ProjectNotInitializedError();
+        }
+
+        const plan = manager.getPlan(args.planId);
+        if (!plan) {
+          throw new PlanNotFoundError(args.planId);
+        }
+
+        // Validate plan status
+        if (plan.status !== "archived") {
+          throw new PlanInvalidStateError(
+            args.planId,
+            plan.status,
+            ["archived"]
+          );
+        }
+
+        // Get stats before unarchiving
+        const stagings = manager.getStagingsByPlan(args.planId);
+        let totalTasks = 0;
+        let completedTasks = 0;
+
+        for (const staging of stagings) {
+          const tasks = manager.getTasksByStaging(staging.id);
+          totalTasks += tasks.length;
+          completedTasks += tasks.filter(t => t.status === "done").length;
+        }
+
+        // Unarchive the plan
+        const { plan: restoredPlan, restoredPath } = await manager.unarchivePlan(args.planId);
+
+        return {
+          success: true,
+          message: `Plan "${restoredPlan.title}" restored from archive`,
+          plan: {
+            id: restoredPlan.id,
+            title: restoredPlan.title,
+            status: restoredPlan.status,
+            restoredPath,
+            restoredAt: new Date().toISOString(),
+          },
+          stats: {
+            stagings: stagings.length,
+            totalTasks,
+            completedTasks,
+          },
+        };
+      }, "zscode:unarchive");
+
+      if (result.success) {
+        return {
+          content: [{ type: "text" as const, text: JSON.stringify(result.data, null, 2) }],
+        };
+      } else {
+        return {
+          content: [{ type: "text" as const, text: JSON.stringify(result.error, null, 2) }],
+          isError: true,
+        };
+      }
+    }
+  );
 }

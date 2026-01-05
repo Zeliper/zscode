@@ -5,9 +5,11 @@ import {
   StagingSchema,
   TaskSchema,
   TaskOutputSchema,
+  TaskOutputInputSchema,
   ProjectSchema,
   HistoryEntrySchema,
   DecisionSchema,
+  MemorySchema,
   ContextSchema,
   TaskStatusSchema,
   TaskPrioritySchema,
@@ -22,7 +24,11 @@ import {
   CancelInputSchema,
   SaveTaskOutputInputSchema,
   UpdateTaskStatusInputSchema,
+  STATE_VERSION,
 } from "./schema.js";
+
+// Re-export constant for convenience
+export { STATE_VERSION };
 
 // ============ Core Types ============
 export type State = z.infer<typeof StateSchema>;
@@ -30,9 +36,11 @@ export type Plan = z.infer<typeof PlanSchema>;
 export type Staging = z.infer<typeof StagingSchema>;
 export type Task = z.infer<typeof TaskSchema>;
 export type TaskOutput = z.infer<typeof TaskOutputSchema>;
+export type TaskOutputInput = z.infer<typeof TaskOutputInputSchema>;
 export type Project = z.infer<typeof ProjectSchema>;
 export type HistoryEntry = z.infer<typeof HistoryEntrySchema>;
 export type Decision = z.infer<typeof DecisionSchema>;
+export type Memory = z.infer<typeof MemorySchema>;
 export type Context = z.infer<typeof ContextSchema>;
 
 // ============ Enum Types ============
@@ -154,4 +162,5 @@ export interface IdGenerator {
   generateTaskId(): string;
   generateHistoryId(): string;
   generateDecisionId(): string;
+  generateMemoryId(): string;
 }

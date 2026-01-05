@@ -5,6 +5,8 @@ import { registerStagingTools } from "./staging.js";
 import { registerStatusTool } from "./status.js";
 import { registerArchiveTool } from "./archive.js";
 import { registerCancelTool } from "./cancel.js";
+import { registerModifyTools } from "./modify.js";
+import { registerMemoryTools } from "./memory.js";
 
 /**
  * Register all ZSCode MCP tools
@@ -27,4 +29,10 @@ export function registerAllTools(server: McpServer, projectRoot: string): void {
 
   // Cancel tool: zscode:cancel
   registerCancelTool(server);
+
+  // Modify tools: update_plan, update_staging, add_staging, remove_staging, add_task, remove_task, update_task_details
+  registerModifyTools(server);
+
+  // Memory tools: add_memory, list_memories, update_memory, remove_memory, get_memories_for_context, list_categories
+  registerMemoryTools(server);
 }

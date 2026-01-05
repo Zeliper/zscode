@@ -1,0 +1,1106 @@
+{
+  "version": "2.0.0",
+  "project": {
+    "name": "ZSCode",
+    "goals": [],
+    "constraints": [],
+    "createdAt": "2026-01-05T04:06:32.216Z",
+    "updatedAt": "2026-01-05T04:06:32.216Z"
+  },
+  "plans": {
+    "plan-x00sx15w": {
+      "id": "plan-x00sx15w",
+      "title": "ZSCode 프로젝트 개선",
+      "description": "코드베이스 분석을 통해 발견한 개선점들을 수정하는 계획. 코드 품질, 테스트, 에러 처리, 문서화 개선을 포함합니다.",
+      "status": "archived",
+      "stagings": [
+        "staging-jvjx",
+        "staging-fcsb",
+        "staging-as92",
+        "staging-8p1c",
+        "staging-nux9",
+        "staging-98iq",
+        "staging-3yjl",
+        "staging-bd24"
+      ],
+      "currentStagingId": "staging-as92",
+      "artifacts_root": ".claude/plans/plan-x00sx15w/artifacts",
+      "createdAt": "2026-01-05T05:27:06.198Z",
+      "updatedAt": "2026-01-05T09:24:09.960Z",
+      "completedAt": "2026-01-05T09:01:52.535Z",
+      "archivedAt": "2026-01-05T09:24:09.960Z"
+    }
+  },
+  "stagings": {
+    "staging-fcsb": {
+      "id": "staging-fcsb",
+      "planId": "plan-x00sx15w",
+      "name": "Phase 1: 코드 품질 개선",
+      "description": "코드 일관성, 네이밍, 중복 제거 등 기본적인 코드 품질 개선",
+      "order": 1,
+      "execution_type": "parallel",
+      "status": "completed",
+      "tasks": [
+        "task-nnmoe1fj",
+        "task-pid8xnzu",
+        "task-gwdxjgb9"
+      ],
+      "artifacts_path": ".claude/plans/plan-x00sx15w/artifacts/staging-fcsb",
+      "createdAt": "2026-01-05T05:27:06.198Z",
+      "startedAt": "2026-01-05T06:01:46.595Z",
+      "completedAt": "2026-01-05T06:01:52.134Z"
+    },
+    "staging-as92": {
+      "id": "staging-as92",
+      "planId": "plan-x00sx15w",
+      "name": "Phase 2: 테스트 추가",
+      "description": "현재 프로젝트에 테스트가 없음. 핵심 기능에 대한 유닛 테스트 추가",
+      "order": 2,
+      "execution_type": "sequential",
+      "status": "completed",
+      "tasks": [
+        "task-g8lpovpn",
+        "task-02wp9e3o",
+        "task-q4olal8o"
+      ],
+      "artifacts_path": ".claude/plans/plan-x00sx15w/artifacts/staging-as92",
+      "createdAt": "2026-01-05T05:27:06.198Z",
+      "startedAt": "2026-01-05T08:56:27.603Z",
+      "completedAt": "2026-01-05T09:01:52.535Z"
+    },
+    "staging-8p1c": {
+      "id": "staging-8p1c",
+      "planId": "plan-x00sx15w",
+      "name": "Phase 3: 에러 처리 강화",
+      "description": "에러 클래스 활용 및 에러 메시지 개선",
+      "order": 3,
+      "execution_type": "parallel",
+      "status": "completed",
+      "tasks": [
+        "task-95g67ljc",
+        "task-p7u85i1h"
+      ],
+      "artifacts_path": ".claude/plans/plan-x00sx15w/artifacts/staging-8p1c",
+      "createdAt": "2026-01-05T05:27:06.198Z",
+      "completedAt": "2026-01-05T08:28:53.230Z"
+    },
+    "staging-nux9": {
+      "id": "staging-nux9",
+      "planId": "plan-x00sx15w",
+      "name": "Phase 4: 타입 안전성 강화",
+      "description": "TypeScript 타입 정의 개선",
+      "order": 4,
+      "execution_type": "parallel",
+      "status": "completed",
+      "tasks": [
+        "task-wy59ca9j",
+        "task-d1hzo2j1"
+      ],
+      "artifacts_path": ".claude/plans/plan-x00sx15w/artifacts/staging-nux9",
+      "createdAt": "2026-01-05T05:27:06.198Z",
+      "completedAt": "2026-01-05T08:28:53.367Z"
+    },
+    "staging-98iq": {
+      "id": "staging-98iq",
+      "planId": "plan-x00sx15w",
+      "name": "Phase 5: 빌드 및 배포 검증",
+      "description": "빌드 성공 확인 및 린트 오류 수정",
+      "order": 5,
+      "execution_type": "sequential",
+      "status": "completed",
+      "tasks": [
+        "task-qr9mdz8i",
+        "task-rkflc9go"
+      ],
+      "artifacts_path": ".claude/plans/plan-x00sx15w/artifacts/staging-98iq",
+      "createdAt": "2026-01-05T05:27:06.198Z",
+      "startedAt": "2026-01-05T08:30:23.299Z",
+      "completedAt": "2026-01-05T08:32:44.001Z"
+    },
+    "staging-jvjx": {
+      "id": "staging-jvjx",
+      "planId": "plan-x00sx15w",
+      "name": "Phase 0: 보안 취약점 수정",
+      "description": "Path Traversal 방어, Atomic Write 구현, ID 생성 강화",
+      "order": 0,
+      "execution_type": "parallel",
+      "status": "completed",
+      "tasks": [
+        "task-e3jd1ifc",
+        "task-dv6ypkqa",
+        "task-lfs1k79c"
+      ],
+      "artifacts_path": ".claude/plans/plan-x00sx15w/artifacts/staging-jvjx",
+      "createdAt": "2026-01-05T05:37:42.967Z",
+      "startedAt": "2026-01-05T05:46:18.124Z",
+      "completedAt": "2026-01-05T06:01:24.303Z"
+    },
+    "staging-3yjl": {
+      "id": "staging-3yjl",
+      "planId": "plan-x00sx15w",
+      "name": "Phase 6: 데이터 무결성 강화",
+      "description": "Task 상태 전이 검증, 순환 의존성 검증, History 크기 제한",
+      "order": 6,
+      "execution_type": "parallel",
+      "status": "completed",
+      "tasks": [
+        "task-4xrrazw7",
+        "task-b2grp7wb",
+        "task-ra78e278"
+      ],
+      "artifacts_path": ".claude/plans/plan-x00sx15w/artifacts/staging-3yjl",
+      "createdAt": "2026-01-05T05:37:43.039Z",
+      "startedAt": "2026-01-05T08:32:51.985Z",
+      "completedAt": "2026-01-05T08:39:04.340Z"
+    },
+    "staging-bd24": {
+      "id": "staging-bd24",
+      "planId": "plan-x00sx15w",
+      "name": "Phase 7: 누락 기능 추가",
+      "description": "Unarchive 기능, Task depends_on 수정 기능 추가",
+      "order": 7,
+      "execution_type": "parallel",
+      "status": "completed",
+      "tasks": [
+        "task-q9q86fnw",
+        "task-9csqgmib"
+      ],
+      "artifacts_path": ".claude/plans/plan-x00sx15w/artifacts/staging-bd24",
+      "createdAt": "2026-01-05T05:37:43.093Z",
+      "startedAt": "2026-01-05T08:43:10.168Z",
+      "completedAt": "2026-01-05T08:46:13.818Z"
+    }
+  },
+  "tasks": {
+    "task-nnmoe1fj": {
+      "id": "task-nnmoe1fj",
+      "planId": "plan-x00sx15w",
+      "stagingId": "staging-fcsb",
+      "title": "메서드명 일관성 수정 (completestaging → completeStaging)",
+      "description": "manager.ts의 completestaging 메서드가 camelCase 컨벤션을 따르지 않음. completeStaging으로 변경",
+      "priority": "high",
+      "status": "done",
+      "execution_mode": "parallel",
+      "depends_on": [],
+      "order": 0,
+      "notes": "completestaging → completeStaging으로 메서드명 변경 완료. manager.ts, staging.ts, plan.ts에서 모두 수정",
+      "createdAt": "2026-01-05T05:27:06.198Z",
+      "updatedAt": "2026-01-05T06:01:39.348Z",
+      "completedAt": "2026-01-05T06:01:39.348Z"
+    },
+    "task-pid8xnzu": {
+      "id": "task-pid8xnzu",
+      "planId": "plan-x00sx15w",
+      "stagingId": "staging-fcsb",
+      "title": "버전 상수 중앙화",
+      "description": "MCP 서버(index.ts)와 CLI(index.ts)에서 버전이 하드코딩되어 있음. package.json에서 읽거나 공통 상수로 관리",
+      "priority": "medium",
+      "status": "done",
+      "execution_mode": "parallel",
+      "depends_on": [],
+      "order": 1,
+      "notes": "STATE_VERSION 상수를 schema.ts에 정의하고, types.ts에서 re-export하며, manager.ts에서 사용하도록 수정",
+      "createdAt": "2026-01-05T05:27:06.198Z",
+      "updatedAt": "2026-01-05T06:01:39.407Z",
+      "completedAt": "2026-01-05T06:01:39.407Z"
+    },
+    "task-gwdxjgb9": {
+      "id": "task-gwdxjgb9",
+      "planId": "plan-x00sx15w",
+      "stagingId": "staging-fcsb",
+      "title": "중복 에러 처리 패턴 리팩토링",
+      "description": "memory.ts의 각 도구에서 반복되는 에러 처리 패턴을 헬퍼 함수로 추출",
+      "priority": "medium",
+      "status": "done",
+      "execution_mode": "parallel",
+      "depends_on": [],
+      "order": 2,
+      "notes": "커스텀 에러 클래스(ProjectNotInitializedError, PlanNotFoundError 등)를 사용하고, ensureInitialized, requirePlan, requireStaging, requireTask, requireMemory 헬퍼 메서드를 추가하여 중복 에러 처리 코드 제거",
+      "createdAt": "2026-01-05T05:27:06.198Z",
+      "updatedAt": "2026-01-05T06:01:39.474Z",
+      "completedAt": "2026-01-05T06:01:39.474Z"
+    },
+    "task-g8lpovpn": {
+      "id": "task-g8lpovpn",
+      "planId": "plan-x00sx15w",
+      "stagingId": "staging-as92",
+      "title": "테스트 환경 설정 (Vitest 또는 Jest)",
+      "description": "테스트 프레임워크 설치 및 설정",
+      "priority": "high",
+      "status": "done",
+      "execution_mode": "sequential",
+      "depends_on": [],
+      "order": 0,
+      "createdAt": "2026-01-05T05:27:06.198Z",
+      "updatedAt": "2026-01-05T08:58:03.108Z",
+      "startedAt": "2026-01-05T08:56:39.230Z",
+      "notes": "Vitest 4.0.16 설치, vitest.config.ts 생성, package.json 테스트 스크립트 추가",
+      "completedAt": "2026-01-05T08:58:03.108Z"
+    },
+    "task-02wp9e3o": {
+      "id": "task-02wp9e3o",
+      "planId": "plan-x00sx15w",
+      "stagingId": "staging-as92",
+      "title": "StateManager 유닛 테스트 작성",
+      "description": "핵심 상태 관리 클래스에 대한 테스트 작성",
+      "priority": "high",
+      "status": "done",
+      "execution_mode": "sequential",
+      "depends_on": [
+        "task-g8lpovpn"
+      ],
+      "order": 1,
+      "createdAt": "2026-01-05T05:27:06.198Z",
+      "updatedAt": "2026-01-05T09:00:16.426Z",
+      "startedAt": "2026-01-05T08:58:03.166Z",
+      "notes": "27개 테스트 케이스 작성 및 통과",
+      "completedAt": "2026-01-05T09:00:16.426Z"
+    },
+    "task-q4olal8o": {
+      "id": "task-q4olal8o",
+      "planId": "plan-x00sx15w",
+      "stagingId": "staging-as92",
+      "title": "스키마 검증 테스트 작성",
+      "description": "Zod 스키마 검증 테스트 작성",
+      "priority": "medium",
+      "status": "done",
+      "execution_mode": "sequential",
+      "depends_on": [
+        "task-g8lpovpn"
+      ],
+      "order": 2,
+      "createdAt": "2026-01-05T05:27:06.198Z",
+      "updatedAt": "2026-01-05T09:01:52.535Z",
+      "startedAt": "2026-01-05T09:00:16.492Z",
+      "notes": "37개 스키마 검증 테스트 작성 및 통과",
+      "completedAt": "2026-01-05T09:01:52.535Z"
+    },
+    "task-95g67ljc": {
+      "id": "task-95g67ljc",
+      "planId": "plan-x00sx15w",
+      "stagingId": "staging-8p1c",
+      "title": "커스텀 에러 클래스 적극 활용",
+      "description": "errors/index.ts에 정의된 에러 클래스들이 일부 도구에서만 사용됨. 모든 도구에서 일관되게 사용하도록 수정",
+      "priority": "medium",
+      "status": "done",
+      "execution_mode": "parallel",
+      "depends_on": [],
+      "order": 0,
+      "notes": "모든 tools 파일에서 문자열 에러를 커스텀 에러 클래스로 교체 완료 (PlanNotFoundError, TaskNotFoundError, ProjectNotInitializedError, ValidationError, MemoryNotFoundError)",
+      "createdAt": "2026-01-05T05:27:06.198Z",
+      "updatedAt": "2026-01-05T08:28:53.170Z",
+      "completedAt": "2026-01-05T08:28:53.170Z"
+    },
+    "task-p7u85i1h": {
+      "id": "task-p7u85i1h",
+      "planId": "plan-x00sx15w",
+      "stagingId": "staging-8p1c",
+      "title": "Memory 관련 에러 클래스 추가",
+      "description": "MemoryNotFoundError, MemoryValidationError 등 메모리 관련 에러 클래스 추가",
+      "priority": "medium",
+      "status": "done",
+      "execution_mode": "parallel",
+      "depends_on": [],
+      "order": 1,
+      "notes": "MemoryError, MemoryNotFoundError가 이미 errors/index.ts에 구현되어 있음. memory.ts에서 활용하도록 수정 완료",
+      "createdAt": "2026-01-05T05:27:06.198Z",
+      "updatedAt": "2026-01-05T08:28:53.230Z",
+      "completedAt": "2026-01-05T08:28:53.230Z"
+    },
+    "task-wy59ca9j": {
+      "id": "task-wy59ca9j",
+      "planId": "plan-x00sx15w",
+      "stagingId": "staging-nux9",
+      "title": "TaskOutput 스키마에 completedAt 자동 생성 처리",
+      "description": "TaskOutputSchema에 completedAt이 필수이지만 save_task_output 호출 시 자동 생성되지 않음",
+      "priority": "medium",
+      "status": "done",
+      "execution_mode": "parallel",
+      "depends_on": [],
+      "order": 0,
+      "notes": "TaskOutputInputSchema 추가하여 input과 storage 스키마 분리. completedAt은 staging.ts에서 자동 생성됨",
+      "createdAt": "2026-01-05T05:27:06.198Z",
+      "updatedAt": "2026-01-05T08:28:53.290Z",
+      "completedAt": "2026-01-05T08:28:53.290Z"
+    },
+    "task-d1hzo2j1": {
+      "id": "task-d1hzo2j1",
+      "planId": "plan-x00sx15w",
+      "stagingId": "staging-nux9",
+      "title": "ID 검증 강화",
+      "description": "도구 입력에서 ID 형식 검증 추가 (현재 z.string()만 사용)",
+      "priority": "low",
+      "status": "done",
+      "execution_mode": "parallel",
+      "depends_on": [],
+      "order": 1,
+      "notes": "ID 검증이 이미 manager.ts의 saveTaskOutput, archivePlan에서 isValidId로 구현됨. InvalidIdError 에러 클래스도 존재",
+      "createdAt": "2026-01-05T05:27:06.198Z",
+      "updatedAt": "2026-01-05T08:28:53.367Z",
+      "completedAt": "2026-01-05T08:28:53.367Z"
+    },
+    "task-qr9mdz8i": {
+      "id": "task-qr9mdz8i",
+      "planId": "plan-x00sx15w",
+      "stagingId": "staging-98iq",
+      "title": "린트 오류 수정",
+      "description": "ESLint 실행 및 오류 수정",
+      "priority": "high",
+      "status": "done",
+      "execution_mode": "sequential",
+      "depends_on": [],
+      "order": 0,
+      "notes": "ESLint 설정 파일 생성, 불필요한 이스케이프 문자 수정",
+      "createdAt": "2026-01-05T05:27:06.198Z",
+      "updatedAt": "2026-01-05T08:32:29.239Z",
+      "startedAt": "2026-01-05T08:30:32.705Z",
+      "completedAt": "2026-01-05T08:32:29.239Z"
+    },
+    "task-rkflc9go": {
+      "id": "task-rkflc9go",
+      "planId": "plan-x00sx15w",
+      "stagingId": "staging-98iq",
+      "title": "빌드 성공 확인",
+      "description": "npm run build 실행 및 오류 수정",
+      "priority": "high",
+      "status": "done",
+      "execution_mode": "sequential",
+      "depends_on": [
+        "task-qr9mdz8i"
+      ],
+      "order": 1,
+      "notes": "빌드 성공 확인됨",
+      "createdAt": "2026-01-05T05:27:06.198Z",
+      "updatedAt": "2026-01-05T08:32:44.001Z",
+      "startedAt": "2026-01-05T08:32:29.324Z",
+      "completedAt": "2026-01-05T08:32:44.001Z"
+    },
+    "task-e3jd1ifc": {
+      "id": "task-e3jd1ifc",
+      "planId": "plan-x00sx15w",
+      "stagingId": "staging-jvjx",
+      "title": "Path Traversal 방어 로직 추가",
+      "description": "artifacts.ts에 경로 검증 함수 추가. filename이 base 디렉토리를 벗어나지 않도록 체크",
+      "priority": "high",
+      "status": "done",
+      "execution_mode": "parallel",
+      "depends_on": [],
+      "order": 0,
+      "notes": "Path Traversal 방어를 위해 isPathSafe, isValidId, isSafePathComponent 함수를 paths.ts에 추가하고 manager.ts에서 사용하도록 수정",
+      "createdAt": "2026-01-05T05:38:08.831Z",
+      "updatedAt": "2026-01-05T06:01:24.153Z",
+      "startedAt": "2026-01-05T05:46:45.372Z",
+      "completedAt": "2026-01-05T06:01:24.153Z"
+    },
+    "task-dv6ypkqa": {
+      "id": "task-dv6ypkqa",
+      "planId": "plan-x00sx15w",
+      "stagingId": "staging-jvjx",
+      "title": "Atomic Write 구현",
+      "description": "manager.ts의 save() 메서드에 임시 파일 후 rename 방식 적용. proper-lockfile 패키지로 파일 락 추가",
+      "priority": "high",
+      "status": "done",
+      "execution_mode": "parallel",
+      "depends_on": [],
+      "order": 1,
+      "notes": "atomicWriteFile 함수를 paths.ts에 추가하여 임시 파일 작성 후 rename하는 방식으로 데이터 손상 방지",
+      "createdAt": "2026-01-05T05:38:08.899Z",
+      "updatedAt": "2026-01-05T06:01:24.226Z",
+      "completedAt": "2026-01-05T06:01:24.226Z"
+    },
+    "task-lfs1k79c": {
+      "id": "task-lfs1k79c",
+      "planId": "plan-x00sx15w",
+      "stagingId": "staging-jvjx",
+      "title": "ID 생성 강화",
+      "description": "generateStagingId()를 4자리에서 8자리로 증가. crypto.randomBytes() 사용. 중복 체크 로직 추가",
+      "priority": "high",
+      "status": "done",
+      "execution_mode": "parallel",
+      "depends_on": [],
+      "order": 2,
+      "notes": "Math.random() 대신 crypto.randomBytes를 사용하는 generateSecureId 함수로 교체",
+      "createdAt": "2026-01-05T05:38:08.982Z",
+      "updatedAt": "2026-01-05T06:01:24.303Z",
+      "completedAt": "2026-01-05T06:01:24.303Z"
+    },
+    "task-4xrrazw7": {
+      "id": "task-4xrrazw7",
+      "planId": "plan-x00sx15w",
+      "stagingId": "staging-3yjl",
+      "title": "Task 상태 전이 검증 추가",
+      "description": "VALID_TRANSITIONS 맵 정의. updateTaskStatus()에서 유효하지 않은 전이 시 에러 발생",
+      "priority": "high",
+      "status": "done",
+      "execution_mode": "parallel",
+      "depends_on": [],
+      "order": 0,
+      "notes": "VALID_TASK_TRANSITIONS 맵 추가, updateTaskStatus에 전이 검증 추가",
+      "createdAt": "2026-01-05T05:38:09.062Z",
+      "updatedAt": "2026-01-05T08:36:27.625Z",
+      "startedAt": "2026-01-05T08:32:58.798Z",
+      "completedAt": "2026-01-05T08:36:27.625Z"
+    },
+    "task-b2grp7wb": {
+      "id": "task-b2grp7wb",
+      "planId": "plan-x00sx15w",
+      "stagingId": "staging-3yjl",
+      "title": "순환 의존성 검증 추가",
+      "description": "addTask() 및 updateTaskDetails()에서 DFS로 순환 의존성 검증. 자기 자신 의존 및 A→B→A 패턴 차단",
+      "priority": "high",
+      "status": "done",
+      "execution_mode": "parallel",
+      "depends_on": [],
+      "order": 1,
+      "notes": "detectCircularDependency 헬퍼 메서드 추가, addTask에서 순환 의존성 체크 추가",
+      "createdAt": "2026-01-05T05:38:09.145Z",
+      "updatedAt": "2026-01-05T08:37:13.392Z",
+      "startedAt": "2026-01-05T08:36:27.683Z",
+      "completedAt": "2026-01-05T08:37:13.392Z"
+    },
+    "task-ra78e278": {
+      "id": "task-ra78e278",
+      "planId": "plan-x00sx15w",
+      "stagingId": "staging-3yjl",
+      "title": "History 크기 제한 추가",
+      "description": "addHistory()에서 최대 1000개 유지. 초과 시 오래된 항목 삭제",
+      "priority": "medium",
+      "status": "done",
+      "execution_mode": "parallel",
+      "depends_on": [],
+      "order": 2,
+      "notes": "MAX_HISTORY_ENTRIES 상수 추가, addHistory에서 크기 제한 적용",
+      "createdAt": "2026-01-05T05:38:09.230Z",
+      "updatedAt": "2026-01-05T08:39:04.340Z",
+      "startedAt": "2026-01-05T08:37:13.448Z",
+      "completedAt": "2026-01-05T08:39:04.340Z"
+    },
+    "task-q9q86fnw": {
+      "id": "task-q9q86fnw",
+      "planId": "plan-x00sx15w",
+      "stagingId": "staging-bd24",
+      "title": "Unarchive 기능 추가",
+      "description": "manager.ts에 unarchivePlan() 메서드 추가. archive.ts에 zscode:unarchive MCP 도구 등록",
+      "priority": "medium",
+      "status": "done",
+      "execution_mode": "parallel",
+      "depends_on": [],
+      "order": 0,
+      "notes": "StateManager에 unarchivePlan 메서드 추가, schema.ts에 plan_unarchived 히스토리 타입 추가, archive.ts에 zscode:unarchive 도구 추가 완료",
+      "createdAt": "2026-01-05T05:38:09.321Z",
+      "updatedAt": "2026-01-05T08:45:02.207Z",
+      "startedAt": "2026-01-05T08:43:35.004Z",
+      "completedAt": "2026-01-05T08:45:02.207Z"
+    },
+    "task-9csqgmib": {
+      "id": "task-9csqgmib",
+      "planId": "plan-x00sx15w",
+      "stagingId": "staging-bd24",
+      "title": "Task depends_on 수정 기능 추가",
+      "description": "modify.ts의 updateTaskDetails()에 depends_on 파라미터 추가. 순환 검증 후 업데이트",
+      "priority": "medium",
+      "status": "done",
+      "execution_mode": "parallel",
+      "depends_on": [],
+      "order": 1,
+      "notes": "StateManager.updateTaskDetails에 depends_on 파라미터 추가 (순환 의존성 검증 포함), modify.ts의 update_task_details 도구에 depends_on 옵션 추가 완료",
+      "createdAt": "2026-01-05T05:38:09.420Z",
+      "updatedAt": "2026-01-05T08:46:13.818Z",
+      "startedAt": "2026-01-05T08:45:02.264Z",
+      "completedAt": "2026-01-05T08:46:13.818Z"
+    }
+  },
+  "history": [
+    {
+      "id": "hist-1767585992216-init",
+      "timestamp": "2026-01-05T04:06:32.216Z",
+      "type": "project_initialized",
+      "details": {
+        "projectName": "ZSCode"
+      }
+    },
+    {
+      "id": "hist-1767590674660-3h50",
+      "timestamp": "2026-01-05T05:24:34.660Z",
+      "type": "memory_added",
+      "details": {
+        "memoryId": "mem-a6h0lnwh",
+        "title": "Plan 완료 시 배포 규칙",
+        "category": "general"
+      }
+    },
+    {
+      "id": "hist-1767590826198-b54e",
+      "timestamp": "2026-01-05T05:27:06.198Z",
+      "type": "plan_created",
+      "details": {
+        "planId": "plan-x00sx15w",
+        "title": "ZSCode 프로젝트 개선",
+        "stagingCount": 5
+      }
+    },
+    {
+      "id": "hist-1767591462967-9vwr",
+      "timestamp": "2026-01-05T05:37:42.967Z",
+      "type": "staging_added",
+      "details": {
+        "planId": "plan-x00sx15w",
+        "stagingId": "staging-jvjx",
+        "name": "Phase 0: 보안 취약점 수정"
+      }
+    },
+    {
+      "id": "hist-1767591463039-8lbl",
+      "timestamp": "2026-01-05T05:37:43.039Z",
+      "type": "staging_added",
+      "details": {
+        "planId": "plan-x00sx15w",
+        "stagingId": "staging-3yjl",
+        "name": "Phase 6: 데이터 무결성 강화"
+      }
+    },
+    {
+      "id": "hist-1767591463093-qtrr",
+      "timestamp": "2026-01-05T05:37:43.093Z",
+      "type": "staging_added",
+      "details": {
+        "planId": "plan-x00sx15w",
+        "stagingId": "staging-bd24",
+        "name": "Phase 7: 누락 기능 추가"
+      }
+    },
+    {
+      "id": "hist-1767591488831-jwk3",
+      "timestamp": "2026-01-05T05:38:08.831Z",
+      "type": "task_added",
+      "details": {
+        "stagingId": "staging-jvjx",
+        "taskId": "task-e3jd1ifc",
+        "title": "Path Traversal 방어 로직 추가"
+      }
+    },
+    {
+      "id": "hist-1767591488899-z0q8",
+      "timestamp": "2026-01-05T05:38:08.899Z",
+      "type": "task_added",
+      "details": {
+        "stagingId": "staging-jvjx",
+        "taskId": "task-dv6ypkqa",
+        "title": "Atomic Write 구현"
+      }
+    },
+    {
+      "id": "hist-1767591488982-keul",
+      "timestamp": "2026-01-05T05:38:08.982Z",
+      "type": "task_added",
+      "details": {
+        "stagingId": "staging-jvjx",
+        "taskId": "task-lfs1k79c",
+        "title": "ID 생성 강화"
+      }
+    },
+    {
+      "id": "hist-1767591489062-jmul",
+      "timestamp": "2026-01-05T05:38:09.062Z",
+      "type": "task_added",
+      "details": {
+        "stagingId": "staging-3yjl",
+        "taskId": "task-4xrrazw7",
+        "title": "Task 상태 전이 검증 추가"
+      }
+    },
+    {
+      "id": "hist-1767591489145-8ilb",
+      "timestamp": "2026-01-05T05:38:09.145Z",
+      "type": "task_added",
+      "details": {
+        "stagingId": "staging-3yjl",
+        "taskId": "task-b2grp7wb",
+        "title": "순환 의존성 검증 추가"
+      }
+    },
+    {
+      "id": "hist-1767591489231-vxjr",
+      "timestamp": "2026-01-05T05:38:09.231Z",
+      "type": "task_added",
+      "details": {
+        "stagingId": "staging-3yjl",
+        "taskId": "task-ra78e278",
+        "title": "History 크기 제한 추가"
+      }
+    },
+    {
+      "id": "hist-1767591489321-o1mf",
+      "timestamp": "2026-01-05T05:38:09.321Z",
+      "type": "task_added",
+      "details": {
+        "stagingId": "staging-bd24",
+        "taskId": "task-q9q86fnw",
+        "title": "Unarchive 기능 추가"
+      }
+    },
+    {
+      "id": "hist-1767591489420-jc44",
+      "timestamp": "2026-01-05T05:38:09.420Z",
+      "type": "task_added",
+      "details": {
+        "stagingId": "staging-bd24",
+        "taskId": "task-9csqgmib",
+        "title": "Task depends_on 수정 기능 추가"
+      }
+    },
+    {
+      "id": "hist-1767591978125-rryf",
+      "timestamp": "2026-01-05T05:46:18.125Z",
+      "type": "staging_started",
+      "details": {
+        "planId": "plan-x00sx15w",
+        "stagingId": "staging-jvjx",
+        "stagingName": "Phase 0: 보안 취약점 수정"
+      }
+    },
+    {
+      "id": "hist-1767592005372-4tpt",
+      "timestamp": "2026-01-05T05:46:45.372Z",
+      "type": "task_started",
+      "details": {
+        "taskId": "task-e3jd1ifc",
+        "taskTitle": "Path Traversal 방어 로직 추가"
+      }
+    },
+    {
+      "id": "hist-1767592884153-4pbj",
+      "timestamp": "2026-01-05T06:01:24.153Z",
+      "type": "task_completed",
+      "details": {
+        "taskId": "task-e3jd1ifc",
+        "taskTitle": "Path Traversal 방어 로직 추가"
+      }
+    },
+    {
+      "id": "hist-1767592884226-udmh",
+      "timestamp": "2026-01-05T06:01:24.226Z",
+      "type": "task_completed",
+      "details": {
+        "taskId": "task-dv6ypkqa",
+        "taskTitle": "Atomic Write 구현"
+      }
+    },
+    {
+      "id": "hist-1767592884303-aeka",
+      "timestamp": "2026-01-05T06:01:24.303Z",
+      "type": "task_completed",
+      "details": {
+        "taskId": "task-lfs1k79c",
+        "taskTitle": "ID 생성 강화"
+      }
+    },
+    {
+      "id": "hist-1767592884303-8iyr",
+      "timestamp": "2026-01-05T06:01:24.303Z",
+      "type": "staging_completed",
+      "details": {
+        "stagingId": "staging-jvjx",
+        "stagingName": "Phase 0: 보안 취약점 수정"
+      }
+    },
+    {
+      "id": "hist-1767592899348-fpko",
+      "timestamp": "2026-01-05T06:01:39.348Z",
+      "type": "task_completed",
+      "details": {
+        "taskId": "task-nnmoe1fj",
+        "taskTitle": "메서드명 일관성 수정 (completestaging → completeStaging)"
+      }
+    },
+    {
+      "id": "hist-1767592899407-ngiz",
+      "timestamp": "2026-01-05T06:01:39.407Z",
+      "type": "task_completed",
+      "details": {
+        "taskId": "task-pid8xnzu",
+        "taskTitle": "버전 상수 중앙화"
+      }
+    },
+    {
+      "id": "hist-1767592899474-ni9g",
+      "timestamp": "2026-01-05T06:01:39.474Z",
+      "type": "task_completed",
+      "details": {
+        "taskId": "task-gwdxjgb9",
+        "taskTitle": "중복 에러 처리 패턴 리팩토링"
+      }
+    },
+    {
+      "id": "hist-1767592899474-5nwr",
+      "timestamp": "2026-01-05T06:01:39.474Z",
+      "type": "staging_completed",
+      "details": {
+        "stagingId": "staging-fcsb",
+        "stagingName": "Phase 1: 코드 품질 개선"
+      }
+    },
+    {
+      "id": "hist-1767592906596-ml6r",
+      "timestamp": "2026-01-05T06:01:46.596Z",
+      "type": "staging_started",
+      "details": {
+        "planId": "plan-x00sx15w",
+        "stagingId": "staging-fcsb",
+        "stagingName": "Phase 1: 코드 품질 개선"
+      }
+    },
+    {
+      "id": "hist-1767592912135-1fmm",
+      "timestamp": "2026-01-05T06:01:52.135Z",
+      "type": "staging_completed",
+      "details": {
+        "stagingId": "staging-fcsb",
+        "stagingName": "Phase 1: 코드 품질 개선"
+      }
+    },
+    {
+      "id": "hist-1767601733170-37k7",
+      "timestamp": "2026-01-05T08:28:53.170Z",
+      "type": "task_completed",
+      "details": {
+        "taskId": "task-95g67ljc",
+        "taskTitle": "커스텀 에러 클래스 적극 활용"
+      }
+    },
+    {
+      "id": "hist-1767601733230-2h2d",
+      "timestamp": "2026-01-05T08:28:53.230Z",
+      "type": "task_completed",
+      "details": {
+        "taskId": "task-p7u85i1h",
+        "taskTitle": "Memory 관련 에러 클래스 추가"
+      }
+    },
+    {
+      "id": "hist-1767601733230-q2nn",
+      "timestamp": "2026-01-05T08:28:53.230Z",
+      "type": "staging_completed",
+      "details": {
+        "stagingId": "staging-8p1c",
+        "stagingName": "Phase 3: 에러 처리 강화"
+      }
+    },
+    {
+      "id": "hist-1767601733290-bixq",
+      "timestamp": "2026-01-05T08:28:53.290Z",
+      "type": "task_completed",
+      "details": {
+        "taskId": "task-wy59ca9j",
+        "taskTitle": "TaskOutput 스키마에 completedAt 자동 생성 처리"
+      }
+    },
+    {
+      "id": "hist-1767601733367-qdsg",
+      "timestamp": "2026-01-05T08:28:53.367Z",
+      "type": "task_completed",
+      "details": {
+        "taskId": "task-d1hzo2j1",
+        "taskTitle": "ID 검증 강화"
+      }
+    },
+    {
+      "id": "hist-1767601733367-dpgr",
+      "timestamp": "2026-01-05T08:28:53.367Z",
+      "type": "staging_completed",
+      "details": {
+        "stagingId": "staging-nux9",
+        "stagingName": "Phase 4: 타입 안전성 강화"
+      }
+    },
+    {
+      "id": "hist-1767601823299-rmez",
+      "timestamp": "2026-01-05T08:30:23.300Z",
+      "type": "staging_started",
+      "details": {
+        "planId": "plan-x00sx15w",
+        "stagingId": "staging-98iq",
+        "stagingName": "Phase 5: 빌드 및 배포 검증"
+      }
+    },
+    {
+      "id": "hist-1767601832705-khit",
+      "timestamp": "2026-01-05T08:30:32.705Z",
+      "type": "task_started",
+      "details": {
+        "taskId": "task-qr9mdz8i",
+        "taskTitle": "린트 오류 수정"
+      }
+    },
+    {
+      "id": "hist-1767601949239-xssl",
+      "timestamp": "2026-01-05T08:32:29.239Z",
+      "type": "task_completed",
+      "details": {
+        "taskId": "task-qr9mdz8i",
+        "taskTitle": "린트 오류 수정"
+      }
+    },
+    {
+      "id": "hist-1767601949324-fzdg",
+      "timestamp": "2026-01-05T08:32:29.324Z",
+      "type": "task_started",
+      "details": {
+        "taskId": "task-rkflc9go",
+        "taskTitle": "빌드 성공 확인"
+      }
+    },
+    {
+      "id": "hist-1767601964001-1iif",
+      "timestamp": "2026-01-05T08:32:44.001Z",
+      "type": "task_completed",
+      "details": {
+        "taskId": "task-rkflc9go",
+        "taskTitle": "빌드 성공 확인"
+      }
+    },
+    {
+      "id": "hist-1767601964001-rtqe",
+      "timestamp": "2026-01-05T08:32:44.001Z",
+      "type": "staging_completed",
+      "details": {
+        "stagingId": "staging-98iq",
+        "stagingName": "Phase 5: 빌드 및 배포 검증"
+      }
+    },
+    {
+      "id": "hist-1767601971985-6m3k",
+      "timestamp": "2026-01-05T08:32:51.985Z",
+      "type": "staging_started",
+      "details": {
+        "planId": "plan-x00sx15w",
+        "stagingId": "staging-3yjl",
+        "stagingName": "Phase 6: 데이터 무결성 강화"
+      }
+    },
+    {
+      "id": "hist-1767601978798-27o4",
+      "timestamp": "2026-01-05T08:32:58.798Z",
+      "type": "task_started",
+      "details": {
+        "taskId": "task-4xrrazw7",
+        "taskTitle": "Task 상태 전이 검증 추가"
+      }
+    },
+    {
+      "id": "hist-1767602187625-kfau",
+      "timestamp": "2026-01-05T08:36:27.626Z",
+      "type": "task_completed",
+      "details": {
+        "taskId": "task-4xrrazw7",
+        "taskTitle": "Task 상태 전이 검증 추가"
+      }
+    },
+    {
+      "id": "hist-1767602187683-5dn8",
+      "timestamp": "2026-01-05T08:36:27.683Z",
+      "type": "task_started",
+      "details": {
+        "taskId": "task-b2grp7wb",
+        "taskTitle": "순환 의존성 검증 추가"
+      }
+    },
+    {
+      "id": "hist-1767602233392-qqsl",
+      "timestamp": "2026-01-05T08:37:13.392Z",
+      "type": "task_completed",
+      "details": {
+        "taskId": "task-b2grp7wb",
+        "taskTitle": "순환 의존성 검증 추가"
+      }
+    },
+    {
+      "id": "hist-1767602233448-21t1",
+      "timestamp": "2026-01-05T08:37:13.448Z",
+      "type": "task_started",
+      "details": {
+        "taskId": "task-ra78e278",
+        "taskTitle": "History 크기 제한 추가"
+      }
+    },
+    {
+      "id": "hist-1767602344340-s2y6",
+      "timestamp": "2026-01-05T08:39:04.340Z",
+      "type": "task_completed",
+      "details": {
+        "taskId": "task-ra78e278",
+        "taskTitle": "History 크기 제한 추가"
+      }
+    },
+    {
+      "id": "hist-1767602344340-us54",
+      "timestamp": "2026-01-05T08:39:04.340Z",
+      "type": "staging_completed",
+      "details": {
+        "stagingId": "staging-3yjl",
+        "stagingName": "Phase 6: 데이터 무결성 강화"
+      }
+    },
+    {
+      "id": "hist-1767602590169-2jc5",
+      "timestamp": "2026-01-05T08:43:10.169Z",
+      "type": "staging_started",
+      "details": {
+        "planId": "plan-x00sx15w",
+        "stagingId": "staging-bd24",
+        "stagingName": "Phase 7: 누락 기능 추가"
+      }
+    },
+    {
+      "id": "hist-1767602615004-n4yr",
+      "timestamp": "2026-01-05T08:43:35.004Z",
+      "type": "task_started",
+      "details": {
+        "taskId": "task-q9q86fnw",
+        "taskTitle": "Unarchive 기능 추가"
+      }
+    },
+    {
+      "id": "hist-1767602702207-spao",
+      "timestamp": "2026-01-05T08:45:02.207Z",
+      "type": "task_completed",
+      "details": {
+        "taskId": "task-q9q86fnw",
+        "taskTitle": "Unarchive 기능 추가"
+      }
+    },
+    {
+      "id": "hist-1767602702264-h8oh",
+      "timestamp": "2026-01-05T08:45:02.264Z",
+      "type": "task_started",
+      "details": {
+        "taskId": "task-9csqgmib",
+        "taskTitle": "Task depends_on 수정 기능 추가"
+      }
+    },
+    {
+      "id": "hist-1767602773818-9qw6",
+      "timestamp": "2026-01-05T08:46:13.818Z",
+      "type": "task_completed",
+      "details": {
+        "taskId": "task-9csqgmib",
+        "taskTitle": "Task depends_on 수정 기능 추가"
+      }
+    },
+    {
+      "id": "hist-1767602773818-lg57",
+      "timestamp": "2026-01-05T08:46:13.818Z",
+      "type": "staging_completed",
+      "details": {
+        "stagingId": "staging-bd24",
+        "stagingName": "Phase 7: 누락 기능 추가"
+      }
+    },
+    {
+      "id": "hist-1767603387604-8ajs",
+      "timestamp": "2026-01-05T08:56:27.604Z",
+      "type": "staging_started",
+      "details": {
+        "planId": "plan-x00sx15w",
+        "stagingId": "staging-as92",
+        "stagingName": "Phase 2: 테스트 추가"
+      }
+    },
+    {
+      "id": "hist-1767603399230-d10u",
+      "timestamp": "2026-01-05T08:56:39.231Z",
+      "type": "task_started",
+      "details": {
+        "taskId": "task-g8lpovpn",
+        "taskTitle": "테스트 환경 설정 (Vitest 또는 Jest)"
+      }
+    },
+    {
+      "id": "hist-1767603483108-8tv3",
+      "timestamp": "2026-01-05T08:58:03.108Z",
+      "type": "task_completed",
+      "details": {
+        "taskId": "task-g8lpovpn",
+        "taskTitle": "테스트 환경 설정 (Vitest 또는 Jest)"
+      }
+    },
+    {
+      "id": "hist-1767603483166-l3g4",
+      "timestamp": "2026-01-05T08:58:03.167Z",
+      "type": "task_started",
+      "details": {
+        "taskId": "task-02wp9e3o",
+        "taskTitle": "StateManager 유닛 테스트 작성"
+      }
+    },
+    {
+      "id": "hist-1767603616426-p9ef",
+      "timestamp": "2026-01-05T09:00:16.427Z",
+      "type": "task_completed",
+      "details": {
+        "taskId": "task-02wp9e3o",
+        "taskTitle": "StateManager 유닛 테스트 작성"
+      }
+    },
+    {
+      "id": "hist-1767603616492-qqib",
+      "timestamp": "2026-01-05T09:00:16.492Z",
+      "type": "task_started",
+      "details": {
+        "taskId": "task-q4olal8o",
+        "taskTitle": "스키마 검증 테스트 작성"
+      }
+    },
+    {
+      "id": "hist-1767603712535-pbpf",
+      "timestamp": "2026-01-05T09:01:52.535Z",
+      "type": "task_completed",
+      "details": {
+        "taskId": "task-q4olal8o",
+        "taskTitle": "스키마 검증 테스트 작성"
+      }
+    },
+    {
+      "id": "hist-1767603712535-c26t",
+      "timestamp": "2026-01-05T09:01:52.535Z",
+      "type": "staging_completed",
+      "details": {
+        "stagingId": "staging-as92",
+        "stagingName": "Phase 2: 테스트 추가"
+      }
+    },
+    {
+      "id": "hist-1767605049966-b876",
+      "timestamp": "2026-01-05T09:24:09.966Z",
+      "type": "plan_archived",
+      "details": {
+        "planId": "plan-x00sx15w",
+        "title": "ZSCode 프로젝트 개선",
+        "reason": "모든 8개 Phase 완료 - 보안, 코드 품질, 테스트, 에러 처리, 타입 안전성, 빌드 검증, 데이터 무결성, 누락 기능 추가"
+      }
+    }
+  ],
+  "context": {
+    "lastUpdated": "2026-01-05T09:24:09.966Z",
+    "activeFiles": [],
+    "decisions": [],
+    "memories": [
+      {
+        "id": "mem-a6h0lnwh",
+        "category": "general",
+        "title": "Plan 완료 시 배포 규칙",
+        "content": "Plan이 Complete 되면 반드시 다음 두 가지를 수행해야 합니다:\n1. NPM에 패키지 퍼블리시 (npm publish)\n2. Git에 커밋 및 푸시 (git push)",
+        "tags": [
+          "deployment",
+          "release",
+          "npm",
+          "git"
+        ],
+        "priority": 80,
+        "enabled": true,
+        "createdAt": "2026-01-05T05:24:34.660Z",
+        "updatedAt": "2026-01-05T05:24:34.660Z"
+      }
+    ]
+  }
+}

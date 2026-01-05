@@ -1,9 +1,13 @@
 import { z } from "zod";
 
+// ============ Constants ============
+export const STATE_VERSION = "2.0.0" as const;
+
 // ============ ID Patterns ============
 const PlanIdPattern = /^plan-[a-z0-9]{8}$/;
 const StagingIdPattern = /^staging-[a-z0-9]{4}$/;
 const TaskIdPattern = /^task-[a-z0-9]{8}$/;
+const MemoryIdPattern = /^mem-[a-z0-9]{8}$/;
 
 // ============ Basic Types ============
 export const ISODateStringSchema = z.string().datetime({ offset: true }).or(z.string().datetime());
@@ -11,6 +15,7 @@ export const ISODateStringSchema = z.string().datetime({ offset: true }).or(z.st
 export const PlanIdSchema = z.string().regex(PlanIdPattern, "Invalid Plan ID format (expected: plan-xxxxxxxx)");
 export const StagingIdSchema = z.string().regex(StagingIdPattern, "Invalid Staging ID format (expected: staging-xxxx)");
 export const TaskIdSchema = z.string().regex(TaskIdPattern, "Invalid Task ID format (expected: task-xxxxxxxx)");
+export const MemoryIdSchema = z.string().regex(MemoryIdPattern, "Invalid Memory ID format (expected: mem-xxxxxxxx)");
 
 // ============ Enums ============
 export const TaskStatusSchema = z.enum(["pending", "in_progress", "done", "blocked", "cancelled"]);
@@ -23,19 +28,39 @@ export const HistoryEntryTypeSchema = z.enum([
   "plan_created",
   "plan_updated",
   "plan_archived",
+  "plan_unarchived",
   "plan_cancelled",
   "staging_started",
   "staging_completed",
   "staging_failed",
+  "staging_updated",
+  "staging_added",
+  "staging_removed",
   "task_started",
   "task_completed",
   "task_blocked",
+  "task_added",
+  "task_removed",
+  "task_updated",
   "decision_added",
+  "memory_added",
+  "memory_updated",
+  "memory_removed",
   "session_started",
   "session_ended",
 ]);
 
 // ============ Task Output Schema ============
+// Input schema for tools (completedAt is auto-generated)
+export const TaskOutputInputSchema = z.object({
+  status: z.enum(["success", "failure", "partial"]),
+  summary: z.string(),
+  artifacts: z.array(z.string()).default([]),
+  data: z.record(z.unknown()).optional(),
+  error: z.string().optional(),
+});
+
+// Full schema with completedAt (for storage)
 export const TaskOutputSchema = z.object({
   status: z.enum(["success", "failure", "partial"]),
   summary: z.string(),
@@ -125,6 +150,22 @@ export const DecisionSchema = z.object({
   timestamp: ISODateStringSchema,
 });
 
+// ============ Memory Schema ============
+// Default categories (can be extended dynamically)
+export const DEFAULT_MEMORY_CATEGORIES = ["general", "planning", "coding", "review"] as const;
+
+export const MemorySchema = z.object({
+  id: MemoryIdSchema,
+  category: z.string().min(1), // Dynamic category support
+  title: z.string().min(1, "Memory title is required"),
+  content: z.string().min(1, "Memory content is required"),
+  tags: z.array(z.string()).default([]),
+  priority: z.number().int().min(0).max(100).default(50), // Higher = applied first
+  enabled: z.boolean().default(true),
+  createdAt: ISODateStringSchema,
+  updatedAt: ISODateStringSchema,
+});
+
 // ============ Context Schema ============
 export const ContextSchema = z.object({
   lastUpdated: ISODateStringSchema,
@@ -132,12 +173,13 @@ export const ContextSchema = z.object({
   currentPlanId: PlanIdSchema.optional(),
   currentStagingId: StagingIdSchema.optional(),
   decisions: z.array(DecisionSchema).default([]),
+  memories: z.array(MemorySchema).default([]), // Memory/Rule storage
   sessionSummary: z.string().optional(),
 });
 
 // ============ Full State Schema ============
 export const StateSchema = z.object({
-  version: z.literal("2.0.0"),
+  version: z.literal(STATE_VERSION),
   project: ProjectSchema,
   plans: z.record(PlanIdSchema, PlanSchema).default({}),
   stagings: z.record(StagingIdSchema, StagingSchema).default({}),

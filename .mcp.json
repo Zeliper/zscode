@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "zscode": {
+      "command": "npx",
+      "args": ["tsx", "packages/mcp-server/src/index.ts"],
+      "env": {
+        "ZSCODE_PROJECT_ROOT": "."
+      }
+    }
+  }
+}

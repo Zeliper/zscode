@@ -1,6 +1,6 @@
 {
   "name": "@zeliper/zscode-mcp-server",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "ZSCode MCP Server for Claude Code - Project planning and task management",
   "publishConfig": {
     "access": "public"
@@ -15,8 +15,12 @@
     "build": "tsc",
     "clean": "node -e \"require('fs').rmSync('dist', { recursive: true, force: true })\"",
     "dev": "tsc --watch",
+    "dev:server": "tsx src/index.ts",
+    "dev:watch": "tsx --watch src/index.ts",
     "start": "node dist/index.js",
-    "test": "echo \"No tests yet\" && exit 0"
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.0",
@@ -24,7 +28,10 @@
   },
   "devDependencies": {
     "@types/node": "^20.10.0",
-    "typescript": "^5.3.0"
+    "@vitest/coverage-v8": "^4.0.16",
+    "tsx": "^4.7.0",
+    "typescript": "^5.3.0",
+    "vitest": "^4.0.16"
   },
   "peerDependencies": {
     "zod": "^3.22.0"

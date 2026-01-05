@@ -1,7 +1,7 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import { StateManager } from "../state/manager.js";
-import { withErrorHandling, ProjectNotInitializedError, TaskNotFoundError } from "../errors/index.js";
+import { withErrorHandling, ProjectNotInitializedError, TaskNotFoundError, PlanNotFoundError } from "../errors/index.js";
 import type { ExecutionType, TaskPriority } from "../state/types.js";
 
 /**
@@ -162,7 +162,7 @@ export function registerPlanTools(server: McpServer): void {
 
         const plan = manager.getPlan(args.planId);
         if (!plan) {
-          throw new Error(`Plan not found: ${args.planId}`);
+          throw new PlanNotFoundError(args.planId);
         }
 
         // Get all stagings and their status
@@ -186,7 +186,7 @@ export function registerPlanTools(server: McpServer): void {
         // Auto-complete stagings where all tasks are done
         for (const s of stagingStatus) {
           if (s.allTasksDone && s.status === "in_progress") {
-            await manager.completestaging(s.id);
+            await manager.completeStaging(s.id);
             s.status = "completed";
           }
         }

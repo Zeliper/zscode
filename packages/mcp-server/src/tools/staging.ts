@@ -8,6 +8,7 @@ import {
   PlanNotFoundError,
   StagingNotFoundError,
   StagingPlanMismatchError,
+  TaskNotFoundError,
 } from "../errors/index.js";
 import type { TaskOutput } from "../state/types.js";
 
@@ -114,7 +115,7 @@ export function registerStagingTools(server: McpServer, projectRoot: string): vo
           throw new StagingNotFoundError(args.stagingId);
         }
 
-        await manager.completestaging(args.stagingId);
+        await manager.completeStaging(args.stagingId);
 
         return {
           success: true,
@@ -166,7 +167,7 @@ export function registerStagingTools(server: McpServer, projectRoot: string): vo
 
         const task = manager.getTask(args.taskId);
         if (!task) {
-          throw new Error(`Task not found: ${args.taskId}`);
+          throw new TaskNotFoundError(args.taskId);
         }
 
         const output: TaskOutput = {

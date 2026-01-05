@@ -35,6 +35,16 @@ export function registerContextTools(server: McpServer, projectRoot: string): vo
           cancelledPlans: plans.filter(p => p.status === "cancelled").length,
         };
 
+        // Get general memories to auto-inject (applied before CLAUDE.md)
+        const generalMemories = manager.getMemoriesForContext("general");
+        const appliedMemories = generalMemories.map(m => ({
+          id: m.id,
+          category: m.category,
+          title: m.title,
+          content: m.content,
+          priority: m.priority,
+        }));
+
         return {
           initialized: true,
           version: state.version,
@@ -47,6 +57,11 @@ export function registerContextTools(server: McpServer, projectRoot: string): vo
           tasks: state.tasks,
           recentHistory: state.history.slice(-20), // Last 20 entries
           decisions: state.context.decisions,
+          // Auto-injected memories (take precedence over CLAUDE.md)
+          appliedMemories,
+          appliedMemoriesText: generalMemories.length > 0
+            ? generalMemories.map(m => `## [${m.category.toUpperCase()}] ${m.title}\n${m.content}`).join("\n\n")
+            : null,
         };
       }, "get_full_context");
 

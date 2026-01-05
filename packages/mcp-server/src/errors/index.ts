@@ -197,6 +197,29 @@ export class TaskDependencyError extends TaskError {
   }
 }
 
+
+export class TaskStateTransitionError extends TaskError {
+  constructor(taskId: string, fromState: string, toState: string, allowedTransitions: string[]) {
+    super(
+      `Invalid state transition for task ${taskId}: ${fromState} -> ${toState}. Allowed: ${allowedTransitions.join(", ")}`,
+      taskId,
+      { fromState, toState, allowedTransitions }
+    );
+    this.name = "TaskStateTransitionError";
+  }
+}
+
+export class CircularDependencyError extends TaskError {
+  constructor(taskId: string, dependencyChain: string[]) {
+    super(
+      `Circular dependency detected for task ${taskId}: ${dependencyChain.join(" -> ")}`,
+      taskId,
+      { dependencyChain }
+    );
+    this.name = "CircularDependencyError";
+  }
+}
+
 /**
  * File system errors
  */
@@ -222,6 +245,50 @@ export class ValidationError extends ZSCodeError {
   constructor(message: string, field?: string, details?: Record<string, unknown>) {
     super(message, "VALIDATION_ERROR", { field, ...details });
     this.name = "ValidationError";
+  }
+}
+
+/**
+ * Security errors
+ */
+export class SecurityError extends ZSCodeError {
+  constructor(message: string, details?: Record<string, unknown>) {
+    super(message, "SECURITY_ERROR", details);
+    this.name = "SecurityError";
+  }
+}
+
+export class PathTraversalError extends SecurityError {
+  constructor(path: string) {
+    super("Invalid path: potential path traversal detected", { path });
+    this.name = "PathTraversalError";
+  }
+}
+
+export class InvalidIdError extends SecurityError {
+  constructor(id: string, idType: string) {
+    super(`Invalid ${idType} ID format: ${id}`, { id, idType });
+    this.name = "InvalidIdError";
+  }
+}
+
+/**
+ * Memory-related errors
+ */
+export class MemoryError extends ZSCodeError {
+  public readonly memoryId: string;
+
+  constructor(message: string, memoryId: string, details?: Record<string, unknown>) {
+    super(message, "MEMORY_ERROR", { memoryId, ...details });
+    this.name = "MemoryError";
+    this.memoryId = memoryId;
+  }
+}
+
+export class MemoryNotFoundError extends MemoryError {
+  constructor(memoryId: string) {
+    super(`Memory not found: ${memoryId}`, memoryId);
+    this.name = "MemoryNotFoundError";
   }
 }
 
