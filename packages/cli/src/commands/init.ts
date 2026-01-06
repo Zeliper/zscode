@@ -1,4 +1,4 @@
-import { writeFile } from "fs/promises";
+import { writeFile, copyFile } from "fs/promises";
 import chalk from "chalk";
 import ora from "ora";
 import inquirer from "inquirer";
@@ -381,8 +381,17 @@ export async function initCommand(options: InitOptions): Promise<void> {
     return;
   }
 
+  let backupPath: string | null = null;
   if (stateExists && options.force) {
-    spinner.warn("Overwriting existing configuration");
+    // Create backup of existing state.json
+    const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+    backupPath = joinPath(claudeDir, `state.backup.${timestamp}.json`);
+    try {
+      await copyFile(getStateFilePath(cwd), backupPath);
+      spinner.warn(`Existing state.json backed up to: ${toPosixPath(backupPath)}`);
+    } catch (backupError) {
+      spinner.warn("Overwriting existing configuration (backup failed)");
+    }
   } else {
     spinner.succeed("Ready to initialize");
   }
@@ -500,5 +509,9 @@ export async function initCommand(options: InitOptions): Promise<void> {
 
   console.log(chalk.gray("  Project root: ") + chalk.white(cwd));
   console.log(chalk.gray("  State file:   ") + chalk.white(toPosixPath(getStateFilePath(cwd))));
+  if (backupPath) {
+    console.log(chalk.gray("  Backup file:  ") + chalk.yellow(toPosixPath(backupPath)));
+    console.log(chalk.gray("\n  To restore previous state, rename the backup file to state.json"));
+  }
   console.log();
 }
