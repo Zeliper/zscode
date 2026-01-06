@@ -1,6 +1,6 @@
 {
   "name": "@zeliper/zscode-mcp-server",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "ZSCode MCP Server for Claude Code - Project planning and task management",
   "publishConfig": {
     "access": "public"
