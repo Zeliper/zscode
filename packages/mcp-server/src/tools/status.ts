@@ -88,7 +88,7 @@ function formatStatusAsMarkdown(data: { overview?: StatusOverview; plans?: PlanS
 }
 
 /**
- * Get overview status of all plans
+ * Get overview status of all plans (with caching optimization)
  */
 function getAllPlansStatus(manager: StateManager): {
   success: boolean;
@@ -107,6 +107,40 @@ function getAllPlansStatus(manager: StateManager): {
   };
 
   const planSummaries: PlanSummary[] = allPlans.map(plan => {
+    // Use cached plan status for performance
+    const cachedStatus = manager.getCachedPlanStatus(plan.id);
+
+    const currentStaging = plan.currentStagingId
+      ? manager.getStaging(plan.currentStagingId)
+      : undefined;
+
+    if (cachedStatus) {
+      const percentage = cachedStatus.totalTasks > 0
+        ? Math.round((cachedStatus.completedTasks / cachedStatus.totalTasks) * 100)
+        : 0;
+
+      return {
+        id: plan.id,
+        title: plan.title,
+        status: plan.status,
+        progress: {
+          totalStagings: cachedStatus.stagingCount,
+          completedStagings: cachedStatus.completedStagingCount,
+          totalTasks: cachedStatus.totalTasks,
+          completedTasks: cachedStatus.completedTasks,
+          percentage,
+        },
+        currentStaging: currentStaging
+          ? {
+              id: currentStaging.id,
+              name: currentStaging.name,
+              status: currentStaging.status,
+            }
+          : undefined,
+      };
+    }
+
+    // Fallback: compute if cache miss (shouldn't happen often)
     const stagings = manager.getStagingsByPlan(plan.id);
     const completedStagings = stagings.filter(s => s.status === "completed").length;
 
@@ -120,10 +154,6 @@ function getAllPlansStatus(manager: StateManager): {
     }
 
     const percentage = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
-
-    const currentStaging = plan.currentStagingId
-      ? manager.getStaging(plan.currentStagingId)
-      : undefined;
 
     return {
       id: plan.id,
@@ -145,6 +175,9 @@ function getAllPlansStatus(manager: StateManager): {
         : undefined,
     };
   });
+
+  // Mark cache as valid after full rebuild
+  manager.markStatusCacheValid();
 
   const state = manager.getState();
 

@@ -127,7 +127,7 @@ export function registerPlanTools(server: McpServer): void {
         }
 
         const previousStatus = task.status;
-        await manager.updateTaskStatus(args.taskId, args.status, args.notes);
+        const updateResult = await manager.updateTaskStatus(args.taskId, args.status, args.notes);
 
         // Build context based on status transition
         let context: TaskContext | null = null;
@@ -180,30 +180,57 @@ export function registerPlanTools(server: McpServer): void {
           }
         }
 
+        // Build staging completion info if staging was auto-completed
+        let stagingCompletion: {
+          stagingCompleted: boolean;
+          completedStagingId?: string;
+          nextStaging?: { id: string; name: string; description?: string } | null;
+          planCompleted?: boolean;
+        } | undefined;
+
+        if (updateResult.stagingCompleted) {
+          stagingCompletion = {
+            stagingCompleted: true,
+            completedStagingId: updateResult.completedStagingId,
+            nextStaging: updateResult.nextStaging ? {
+              id: updateResult.nextStaging.id,
+              name: updateResult.nextStaging.name,
+              description: updateResult.nextStaging.description,
+            } : null,
+            planCompleted: !updateResult.nextStaging,
+          };
+        }
+
         return {
           success: true,
           message: `Task status updated: ${previousStatus} -> ${args.status}`,
           task: {
             id: task.id,
             title: task.title,
+            planId: task.planId,
             previousStatus,
             newStatus: args.status,
             notes: args.notes,
           },
+          // Staging auto-completion info
+          stagingCompletion,
+          // Context optimized: removed memoriesText (duplicate), removed content from memories
           context: context ? {
             event: context.event,
+            memoryCount: context.memories.length,
             memories: context.memories.map(m => ({
               id: m.id,
               category: m.category,
               title: m.title,
-              content: m.content,
               priority: m.priority,
             })),
-            memoriesText: context.memories.length > 0
-              ? context.memories.map(m => `## [${m.category.toUpperCase()}] ${m.title}\n${m.content}`).join("\n\n")
-              : null,
             crossReferencedOutputs: context.event === "task-start"
-              ? (context as { crossReferencedOutputs: CrossReferencedTaskOutput[] }).crossReferencedOutputs
+              ? (context as { crossReferencedOutputs: CrossReferencedTaskOutput[] }).crossReferencedOutputs?.map(o => ({
+                  taskId: o.taskId,
+                  taskTitle: o.taskTitle,
+                  stagingId: o.stagingId,
+                  hasOutput: o.output !== null,
+                }))
               : undefined,
           } : undefined,
         };
@@ -211,7 +238,139 @@ export function registerPlanTools(server: McpServer): void {
 
       if (result.success) {
         const d = result.data;
-        return textResponse(formatTaskUpdate(d.task.id, d.task.title, d.task.previousStatus, d.task.newStatus));
+        const lines = [formatTaskUpdate(d.task.id, d.task.title, d.task.previousStatus, d.task.newStatus)];
+
+        // Add staging completion info with user consent requirement
+        if (d.stagingCompletion?.stagingCompleted) {
+          lines.push("");
+          lines.push("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+          lines.push("🎉 **Staging completed!**");
+
+          if (d.stagingCompletion.planCompleted) {
+            lines.push("");
+            lines.push("✅ **Plan completed!** All stagings are done.");
+            lines.push(`   Use \`zscode:archive\` to archive: ${d.task.planId}`);
+          } else if (d.stagingCompletion.nextStaging) {
+            const next = d.stagingCompletion.nextStaging;
+            lines.push("");
+            lines.push("## Next Staging Available");
+            lines.push(`📋 **${next.name}** (${next.id})`);
+            if (next.description) {
+              lines.push(`   ${next.description}`);
+            }
+            lines.push("");
+            lines.push("⚠️ **USER CONSENT REQUIRED**");
+            lines.push("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+            lines.push("**DO NOT proceed to the next staging automatically.**");
+            lines.push("**Ask the user for permission before starting the next phase.**");
+            lines.push("");
+            lines.push(`▶️ When approved: \`zscode:start ${d.task.planId} ${next.id}\``);
+          }
+        }
+
+        return textResponse(lines.join("\n"));
+      } else {
+        return textErrorResponse(result.error.message);
+      }
+    }
+  );
+
+  // ============ update_tasks (batch) ============
+  server.tool(
+    "update_tasks",
+    "Batch update multiple tasks' status at once. Use this for parallel staging execution where multiple tasks need to be updated simultaneously. More efficient and atomic than multiple update_task calls.",
+    {
+      updates: z.array(z.object({
+        taskId: z.string().describe("Task ID to update"),
+        status: z.enum(["pending", "in_progress", "done", "blocked", "cancelled"])
+          .describe("New task status"),
+        notes: z.string().optional().describe("Notes about the status change"),
+      })).min(1).describe("Array of task updates to apply"),
+    },
+    async (args) => {
+      const result = await withErrorHandling(async () => {
+        const manager = StateManager.getInstance();
+
+        if (!manager.isInitialized()) {
+          throw new ProjectNotInitializedError();
+        }
+
+        const updateResult = await manager.updateTasksStatus(args.updates);
+
+        return {
+          success: true,
+          message: `Updated ${updateResult.results.filter(r => r.success).length}/${args.updates.length} tasks`,
+          results: updateResult.results,
+          stagingCompleted: updateResult.stagingCompleted,
+          completedStagingId: updateResult.completedStagingId,
+          nextStaging: updateResult.nextStaging ? {
+            id: updateResult.nextStaging.id,
+            name: updateResult.nextStaging.name,
+            description: updateResult.nextStaging.description,
+          } : undefined,
+          planCompleted: updateResult.planCompleted,
+        };
+      }, "update_tasks");
+
+      if (result.success) {
+        const d = result.data;
+        const lines: string[] = [];
+
+        // Group by status for compact display
+        const successful = d.results.filter((r: { success: boolean }) => r.success);
+        const failed = d.results.filter((r: { success: boolean }) => !r.success);
+
+        if (successful.length > 0) {
+          // Group by newStatus
+          const byStatus: Record<string, Array<{ taskTitle: string; previousStatus: string }>> = {};
+          for (const r of successful) {
+            if (!byStatus[r.newStatus]) {
+              byStatus[r.newStatus] = [];
+            }
+            byStatus[r.newStatus]!.push({ taskTitle: r.taskTitle, previousStatus: r.previousStatus });
+          }
+
+          for (const [status, tasks] of Object.entries(byStatus)) {
+            const icon = getStatusIcon(status);
+            lines.push(`${icon} **${status}** (${tasks.length})`);
+            for (const t of tasks) {
+              lines.push(`   - ${t.taskTitle} (${t.previousStatus} → ${status})`);
+            }
+          }
+        }
+
+        if (failed.length > 0) {
+          lines.push("");
+          lines.push("❌ **Failed updates:**");
+          for (const r of failed) {
+            lines.push(`   - ${r.taskTitle}: ${r.error}`);
+          }
+        }
+
+        // Add staging completion info
+        if (d.stagingCompleted) {
+          lines.push("");
+          lines.push("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+          lines.push("🎉 **Staging completed!**");
+
+          if (d.planCompleted) {
+            lines.push("");
+            lines.push("✅ **Plan completed!** All stagings are done.");
+          } else if (d.nextStaging) {
+            lines.push("");
+            lines.push("## Next Staging Available");
+            lines.push(`📋 **${d.nextStaging.name}** (${d.nextStaging.id})`);
+            if (d.nextStaging.description) {
+              lines.push(`   ${d.nextStaging.description}`);
+            }
+            lines.push("");
+            lines.push("⚠️ **USER CONSENT REQUIRED**");
+            lines.push("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+            lines.push("**DO NOT proceed to the next staging automatically.**");
+          }
+        }
+
+        return textResponse(lines.join("\n"));
       } else {
         return textErrorResponse(result.error.message);
       }

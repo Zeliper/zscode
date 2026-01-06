@@ -3,6 +3,16 @@ import { z } from "zod";
 import { StateManager } from "../state/manager.js";
 import { withErrorHandling, ProjectNotInitializedError, MemoryNotFoundError, ValidationError } from "../errors/index.js";
 import { DEFAULT_MEMORY_CATEGORIES } from "../state/schema.js";
+import {
+  textResponse,
+  textErrorResponse,
+  formatMemoryAdded,
+  formatMemoryUpdated,
+  formatMemoryRemoved,
+  formatMemoryList,
+  formatMemoriesForContext,
+  formatCategoryList,
+} from "../utils/format.js";
 
 /**
  * Register memory-related tools
@@ -54,14 +64,9 @@ export function registerMemoryTools(server: McpServer): void {
       }, "add_memory");
 
       if (result.success) {
-        return {
-          content: [{ type: "text" as const, text: JSON.stringify(result.data, null, 2) }],
-        };
+        return textResponse(formatMemoryAdded(result.data.memory.title, result.data.memory.category));
       } else {
-        return {
-          content: [{ type: "text" as const, text: JSON.stringify(result.error, null, 2) }],
-          isError: true,
-        };
+        return textErrorResponse(result.error.message);
       }
     }
   );
@@ -105,14 +110,9 @@ export function registerMemoryTools(server: McpServer): void {
       }, "list_memories");
 
       if (result.success) {
-        return {
-          content: [{ type: "text" as const, text: JSON.stringify(result.data, null, 2) }],
-        };
+        return textResponse(formatMemoryList(result.data.memories));
       } else {
-        return {
-          content: [{ type: "text" as const, text: JSON.stringify(result.error, null, 2) }],
-          isError: true,
-        };
+        return textErrorResponse(result.error.message);
       }
     }
   );
@@ -168,14 +168,9 @@ export function registerMemoryTools(server: McpServer): void {
       }, "update_memory");
 
       if (result.success) {
-        return {
-          content: [{ type: "text" as const, text: JSON.stringify(result.data, null, 2) }],
-        };
+        return textResponse(formatMemoryUpdated(result.data.memory.title));
       } else {
-        return {
-          content: [{ type: "text" as const, text: JSON.stringify(result.error, null, 2) }],
-          isError: true,
-        };
+        return textErrorResponse(result.error.message);
       }
     }
   );
@@ -214,14 +209,9 @@ export function registerMemoryTools(server: McpServer): void {
       }, "remove_memory");
 
       if (result.success) {
-        return {
-          content: [{ type: "text" as const, text: JSON.stringify(result.data, null, 2) }],
-        };
+        return textResponse(formatMemoryRemoved(result.data.removed.title));
       } else {
-        return {
-          content: [{ type: "text" as const, text: JSON.stringify(result.error, null, 2) }],
-          isError: true,
-        };
+        return textErrorResponse(result.error.message);
       }
     }
   );
@@ -267,14 +257,9 @@ export function registerMemoryTools(server: McpServer): void {
       }, "get_memories_for_context");
 
       if (result.success) {
-        return {
-          content: [{ type: "text" as const, text: JSON.stringify(result.data, null, 2) }],
-        };
+        return textResponse(formatMemoriesForContext(result.data.context, result.data.memories));
       } else {
-        return {
-          content: [{ type: "text" as const, text: JSON.stringify(result.error, null, 2) }],
-          isError: true,
-        };
+        return textErrorResponse(result.error.message);
       }
     }
   );
@@ -304,14 +289,9 @@ export function registerMemoryTools(server: McpServer): void {
       }, "list_categories");
 
       if (result.success) {
-        return {
-          content: [{ type: "text" as const, text: JSON.stringify(result.data, null, 2) }],
-        };
+        return textResponse(formatCategoryList(result.data.defaultCategories, result.data.usedCategories));
       } else {
-        return {
-          content: [{ type: "text" as const, text: JSON.stringify(result.error, null, 2) }],
-          isError: true,
-        };
+        return textErrorResponse(result.error.message);
       }
     }
   );

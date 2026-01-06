@@ -9,6 +9,11 @@ import { registerModifyTools } from "./modify.js";
 import { registerMemoryTools } from "./memory.js";
 import { registerFileTools } from "./files.js";
 import { registerSummaryTools } from "./summary.js";
+import { registerTemplateTools } from "./template.js";
+import { registerRollbackTools } from "./rollback.js";
+import { registerSearchTools } from "./search.js";
+import { registerBulkTools } from "./bulk.js";
+import { registerNavigateTools } from "./navigate.js";
 
 /**
  * Register all ZSCode MCP tools
@@ -43,4 +48,19 @@ export function registerAllTools(server: McpServer, projectRoot: string): void {
 
   // Summary tools: generate_summary, get_project_summary, delete_project_summary
   registerSummaryTools(server);
+
+  // Template tools: create_template, get_template, list_templates, update_template, delete_template, apply_template
+  registerTemplateTools(server);
+
+  // Rollback tools: create_snapshot, list_snapshots, get_snapshot, restore_snapshot, delete_snapshot, cleanup_snapshots
+  registerRollbackTools(server);
+
+  // Search tools: search, search_tasks, search_plans, search_memories
+  registerSearchTools(server);
+
+  // Bulk tools: bulk_update_tasks, bulk_delete_tasks, bulk_update_memories, bulk_complete_tasks, bulk_cancel_tasks, bulk_enable_memories, bulk_disable_memories
+  registerBulkTools(server);
+
+  // Navigate tools: get_plans_paginated, get_tasks_paginated, get_templates_paginated, quick_tasks, quick_plans
+  registerNavigateTools(server);
 }

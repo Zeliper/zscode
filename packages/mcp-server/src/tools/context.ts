@@ -48,14 +48,22 @@ export function registerContextTools(server: McpServer, projectRoot: string): vo
         };
 
         // Get always-applied memories (general + project-summary)
+        // In lightweight mode, exclude content for context optimization
         const alwaysAppliedMemories = manager.getAlwaysAppliedMemories();
-        const appliedMemories = alwaysAppliedMemories.map(m => ({
-          id: m.id,
-          category: m.category,
-          title: m.title,
-          content: m.content,
-          priority: m.priority,
-        }));
+        const appliedMemories = args.lightweight
+          ? alwaysAppliedMemories.map(m => ({
+              id: m.id,
+              category: m.category,
+              title: m.title,
+              priority: m.priority,
+            }))
+          : alwaysAppliedMemories.map(m => ({
+              id: m.id,
+              category: m.category,
+              title: m.title,
+              content: m.content,
+              priority: m.priority,
+            }));
 
         // Lightweight mode: return only essential info
         if (args.lightweight) {
@@ -208,6 +216,75 @@ export function registerContextTools(server: McpServer, projectRoot: string): vo
 
       if (result.success) {
         return textResponse(`✅ Project **${result.data.name}** initialized`);
+      } else {
+        return textErrorResponse(result.error.message);
+      }
+    }
+  );
+
+  // ============ update_project ============
+  server.tool(
+    "update_project",
+    "Update project information (name, description, goals, constraints). Use this to set project metadata that will be included in the project summary.",
+    {
+      name: z.string().optional().describe("New project name"),
+      description: z.string().optional().describe("Project description"),
+      goals: z.array(z.string()).optional().describe("Project goals (replaces existing)"),
+      constraints: z.array(z.string()).optional().describe("Project constraints (replaces existing)"),
+    },
+    async (args) => {
+      const result = await withErrorHandling(async () => {
+        const manager = StateManager.getInstance();
+
+        if (!manager.isInitialized()) {
+          throw new Error("Project not initialized");
+        }
+
+        // Check if at least one field is provided
+        if (!args.name && !args.description && !args.goals && !args.constraints) {
+          return {
+            success: false,
+            message: "At least one field (name, description, goals, or constraints) must be provided",
+          };
+        }
+
+        const project = await manager.updateProject({
+          name: args.name,
+          description: args.description,
+          goals: args.goals,
+          constraints: args.constraints,
+        });
+
+        return {
+          success: true,
+          project: {
+            name: project.name,
+            description: project.description,
+            goals: project.goals,
+            constraints: project.constraints,
+          },
+        };
+      }, "update_project");
+
+      if (result.success) {
+        const data = result.data;
+        if (!data.success) {
+          return textErrorResponse(data.message ?? "Unknown error");
+        }
+        const project = data.project!;
+        const lines = [`✅ Project updated: **${project.name}**`];
+        if (project.description) {
+          lines.push(`📝 ${project.description}`);
+        }
+        if (project.goals.length > 0) {
+          lines.push(`\n**Goals:**`);
+          project.goals.forEach((g: string) => lines.push(`- ${g}`));
+        }
+        if (project.constraints.length > 0) {
+          lines.push(`\n**Constraints:**`);
+          project.constraints.forEach((c: string) => lines.push(`- ${c}`));
+        }
+        return textResponse(lines.join("\n"));
       } else {
         return textErrorResponse(result.error.message);
       }

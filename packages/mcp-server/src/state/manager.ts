@@ -22,6 +22,26 @@ import {
   type CrossReferencedTaskOutput,
   type ModelType,
   type SessionBudget,
+  // Template types
+  type Template,
+  type TemplateCategory,
+  type TemplateStagingDef,
+  // Snapshot types
+  type Snapshot,
+  type SnapshotType,
+  type SnapshotTrigger,
+  type SnapshotData,
+  // Search types
+  type SearchQuery,
+  type SearchResult,
+  type SearchResultItem,
+  type SearchEntityType,
+  type SearchFilter,
+  // Pagination types
+  type PaginatedResult,
+  // Bulk operation types
+  type BulkUpdateResult,
+  type BulkDeleteResult,
 } from "./types.js";
 import {
   normalizePath,
@@ -64,14 +84,29 @@ const VALID_TASK_TRANSITIONS: Record<TaskStatus, TaskStatus[]> = {
 };
 // ============ ID Generator ============
 // Uses cryptographically secure random generation
-const idGenerator: IdGenerator = {
+interface ExtendedIdGenerator extends IdGenerator {
+  generateTemplateId(): string;
+  generateSnapshotId(): string;
+}
+
+const idGenerator: ExtendedIdGenerator = {
   generatePlanId: () => `plan-${generateSecureId(8)}`,
   generateStagingId: () => `staging-${generateSecureId(4)}`,
   generateTaskId: () => `task-${generateSecureId(8)}`,
   generateHistoryId: () => `hist-${Date.now()}-${generateSecureId(4)}`,
   generateDecisionId: () => `dec-${Date.now()}-${generateSecureId(4)}`,
   generateMemoryId: () => `mem-${generateSecureId(8)}`,
+  generateTemplateId: () => `tpl-${generateSecureId(8)}`,
+  generateSnapshotId: () => `snap-${generateSecureId(8)}`,
 };
+
+// ============ Cache Types ============
+interface PlanStatusCache {
+  totalTasks: number;
+  completedTasks: number;
+  stagingCount: number;
+  completedStagingCount: number;
+}
 
 // ============ StateManager Class ============
 export class StateManager {
@@ -79,6 +114,15 @@ export class StateManager {
   private state: State | null = null;
   private projectRoot: string;
   private stateFilePath: string;
+
+  // Optimization: Dirty flag for debounced saving
+  private _dirty: boolean = false;
+  private _saveTimer: ReturnType<typeof setTimeout> | null = null;
+  private _saveDebounceMs: number = 100;
+
+  // Optimization: Plan status cache
+  private _planStatusCache: Map<string, PlanStatusCache> = new Map();
+  private _statusCacheValid: boolean = false;
 
   private constructor(projectRoot: string) {
     this.projectRoot = normalizePath(projectRoot);
@@ -121,8 +165,45 @@ export class StateManager {
     if (!this.state) {
       throw new Error("No state to save");
     }
+    // Mark dirty and schedule debounced save
+    this._dirty = true;
+    this.scheduleSave();
+  }
+
+  /**
+   * Schedule a debounced save operation
+   */
+  private scheduleSave(): void {
+    if (this._saveTimer) {
+      return; // Already scheduled
+    }
+    this._saveTimer = setTimeout(async () => {
+      await this.flushSave();
+    }, this._saveDebounceMs);
+  }
+
+  /**
+   * Immediately flush pending save to disk
+   */
+  async flushSave(): Promise<void> {
+    if (this._saveTimer) {
+      clearTimeout(this._saveTimer);
+      this._saveTimer = null;
+    }
+    if (!this._dirty || !this.state) {
+      return;
+    }
+    this._dirty = false;
     // Use atomic write to prevent data corruption
     await atomicWriteFile(this.stateFilePath, JSON.stringify(this.state, null, 2));
+  }
+
+  /**
+   * Invalidate cache for a specific plan (also invalidates global status cache)
+   */
+  private invalidatePlanCache(planId: string): void {
+    this._planStatusCache.delete(planId);
+    this._statusCacheValid = false;
   }
 
   // ============ Validation Helpers ============
@@ -232,6 +313,8 @@ export class StateManager {
       plans: {},
       stagings: {},
       tasks: {},
+      templates: {},
+      snapshots: {},
       history: [],
       context: {
         lastUpdated: now,
@@ -244,6 +327,34 @@ export class StateManager {
     await this.addHistory("project_initialized", { projectName: name });
     await this.save();
     return project;
+  }
+
+  async updateProject(updates: {
+    name?: string;
+    description?: string;
+    goals?: string[];
+    constraints?: string[];
+  }): Promise<Project> {
+    const state = this.ensureInitialized();
+    const now = new Date().toISOString();
+
+    if (updates.name !== undefined) {
+      state.project.name = updates.name;
+    }
+    if (updates.description !== undefined) {
+      state.project.description = updates.description;
+    }
+    if (updates.goals !== undefined) {
+      state.project.goals = updates.goals;
+    }
+    if (updates.constraints !== undefined) {
+      state.project.constraints = updates.constraints;
+    }
+    state.project.updatedAt = now;
+
+    await this.addHistory("project_updated", { updates: Object.keys(updates) });
+    await this.save();
+    return state.project;
   }
 
   // ============ Plan Operations ============
@@ -429,6 +540,9 @@ export class StateManager {
     staging.status = "completed";
     staging.completedAt = now;
 
+    // Invalidate cache for this plan
+    this.invalidatePlanCache(staging.planId);
+
     const plan = this.getPlan(staging.planId);
     if (plan) {
       plan.updatedAt = now;
@@ -452,7 +566,11 @@ export class StateManager {
   }
 
   // ============ Task Operations ============
-  async updateTaskStatus(taskId: string, status: TaskStatus, notes?: string): Promise<void> {
+  async updateTaskStatus(taskId: string, status: TaskStatus, notes?: string): Promise<{
+    stagingCompleted?: boolean;
+    completedStagingId?: string;
+    nextStaging?: Staging | null;
+  }> {
     const task = this.requireTask(taskId);
 
     // Validate state transition
@@ -465,9 +583,14 @@ export class StateManager {
     task.status = status;
     task.updatedAt = now;
 
+    // Invalidate cache for this plan
+    this.invalidatePlanCache(task.planId);
+
     if (notes) {
       task.notes = notes;
     }
+
+    let result: { stagingCompleted?: boolean; completedStagingId?: string; nextStaging?: Staging | null } = {};
 
     if (status === "in_progress") {
       task.startedAt = now;
@@ -485,6 +608,15 @@ export class StateManager {
         });
         if (allTasksDone) {
           await this.completeStaging(staging.id);
+          result.stagingCompleted = true;
+          result.completedStagingId = staging.id;
+
+          // Find next staging
+          const allStagings = this.getStagingsByPlan(staging.planId);
+          const currentIndex = allStagings.findIndex(s => s.id === staging.id);
+          result.nextStaging = currentIndex >= 0 && currentIndex < allStagings.length - 1
+            ? allStagings[currentIndex + 1]
+            : null;
         }
       }
     } else if (status === "blocked") {
@@ -492,6 +624,161 @@ export class StateManager {
     }
 
     await this.save();
+    return result;
+  }
+
+  /**
+   * Batch update multiple tasks' status at once.
+   * This is more efficient than calling updateTaskStatus multiple times
+   * and ensures atomic updates for parallel staging execution.
+   */
+  async updateTasksStatus(updates: Array<{
+    taskId: string;
+    status: TaskStatus;
+    notes?: string;
+  }>): Promise<{
+    results: Array<{
+      taskId: string;
+      taskTitle: string;
+      previousStatus: TaskStatus;
+      newStatus: TaskStatus;
+      success: boolean;
+      error?: string;
+    }>;
+    stagingCompleted?: boolean;
+    completedStagingId?: string;
+    nextStaging?: Staging | null;
+    planCompleted?: boolean;
+  }> {
+    const now = new Date().toISOString();
+    const results: Array<{
+      taskId: string;
+      taskTitle: string;
+      previousStatus: TaskStatus;
+      newStatus: TaskStatus;
+      success: boolean;
+      error?: string;
+    }> = [];
+
+    const affectedPlanIds = new Set<string>();
+    const affectedStagingIds = new Set<string>();
+
+    // Process all updates first (validation and state change)
+    for (const update of updates) {
+      const task = this.getTask(update.taskId);
+      if (!task) {
+        results.push({
+          taskId: update.taskId,
+          taskTitle: "unknown",
+          previousStatus: "pending",
+          newStatus: update.status,
+          success: false,
+          error: `Task not found: ${update.taskId}`,
+        });
+        continue;
+      }
+
+      const previousStatus = task.status;
+
+      // Validate state transition
+      const allowedTransitions = VALID_TASK_TRANSITIONS[task.status];
+      if (!allowedTransitions.includes(update.status)) {
+        results.push({
+          taskId: update.taskId,
+          taskTitle: task.title,
+          previousStatus,
+          newStatus: update.status,
+          success: false,
+          error: `Invalid transition: ${task.status} -> ${update.status}`,
+        });
+        continue;
+      }
+
+      // Apply the update
+      task.status = update.status;
+      task.updatedAt = now;
+      if (update.notes) {
+        task.notes = update.notes;
+      }
+
+      affectedPlanIds.add(task.planId);
+      affectedStagingIds.add(task.stagingId);
+
+      if (update.status === "in_progress") {
+        task.startedAt = now;
+      } else if (update.status === "done") {
+        task.completedAt = now;
+      }
+
+      results.push({
+        taskId: update.taskId,
+        taskTitle: task.title,
+        previousStatus,
+        newStatus: update.status,
+        success: true,
+      });
+    }
+
+    // Invalidate cache for affected plans
+    for (const planId of affectedPlanIds) {
+      this.invalidatePlanCache(planId);
+    }
+
+    // Add history entries for successful updates
+    for (const result of results) {
+      if (result.success) {
+        if (result.newStatus === "in_progress") {
+          await this.addHistory("task_started", { taskId: result.taskId, taskTitle: result.taskTitle });
+        } else if (result.newStatus === "done") {
+          await this.addHistory("task_completed", { taskId: result.taskId, taskTitle: result.taskTitle });
+        } else if (result.newStatus === "blocked") {
+          const update = updates.find(u => u.taskId === result.taskId);
+          await this.addHistory("task_blocked", { taskId: result.taskId, taskTitle: result.taskTitle, notes: update?.notes });
+        }
+      }
+    }
+
+    // Check for staging completion
+    let stagingCompleted = false;
+    let completedStagingId: string | undefined;
+    let nextStaging: Staging | null = null;
+    let planCompleted = false;
+
+    for (const stagingId of affectedStagingIds) {
+      const staging = this.getStaging(stagingId);
+      if (staging && staging.status === "in_progress") {
+        const allTasksDone = staging.tasks.every(id => {
+          const t = this.getTask(id);
+          return t?.status === "done";
+        });
+
+        if (allTasksDone) {
+          await this.completeStaging(staging.id);
+          stagingCompleted = true;
+          completedStagingId = staging.id;
+
+          // Find next staging
+          const allStagings = this.getStagingsByPlan(staging.planId);
+          const currentIndex = allStagings.findIndex(s => s.id === staging.id);
+          if (currentIndex >= 0 && currentIndex < allStagings.length - 1) {
+            nextStaging = allStagings[currentIndex + 1]!;
+          } else {
+            planCompleted = true;
+          }
+          break; // Only report first staging completion
+        }
+      }
+    }
+
+    await this.save();
+
+    return {
+      results,
+      stagingCompleted: stagingCompleted ? true : undefined,
+      completedStagingId,
+      nextStaging,
+      planCompleted: planCompleted ? true : undefined,
+    };
   }
 
   async saveTaskOutput(taskId: string, output: TaskOutput): Promise<void> {
@@ -649,6 +936,9 @@ export class StateManager {
     if (plan.status === "archived" || plan.status === "cancelled") {
       throw new PlanInvalidStateError(planId, plan.status, ["draft", "active", "completed"]);
     }
+
+    // Invalidate cache for this plan
+    this.invalidatePlanCache(planId);
 
     const now = new Date().toISOString();
     let affectedStagings = 0;
@@ -1004,6 +1294,16 @@ export class StateManager {
       project.constraints.forEach(c => lines.push(`- ${c}`));
     }
 
+    // Features (MCP Tools) - Always include
+    lines.push(`\n## Features`);
+    lines.push(`- **Plan Management**: create_plan, update_plan, sync_plan, zscode:cancel, zscode:archive, zscode:unarchive`);
+    lines.push(`- **Staging Management**: zscode:start, add_staging, update_staging, remove_staging, complete_staging`);
+    lines.push(`- **Task Management**: add_task, update_task, update_task_details, remove_task, save_task_output, get_staging_artifacts`);
+    lines.push(`- **Memory System**: add_memory, list_memories, update_memory, remove_memory, get_memories_for_context, list_categories`);
+    lines.push(`- **Context & Status**: get_full_context, zscode:status, init_project, update_project, add_decision`);
+    lines.push(`- **Summary**: generate_summary, get_project_summary, delete_project_summary`);
+    lines.push(`- **File Operations**: zscode:read, zscode:write`);
+
     // Current status
     lines.push(`\n## Status`);
     lines.push(`- Active Plans: ${activePlans.length}`);
@@ -1212,6 +1512,9 @@ export class StateManager {
     plan.stagings.splice(insertAt, 0, stagingId);
     plan.updatedAt = now;
 
+    // Invalidate cache for this plan
+    this.invalidatePlanCache(planId);
+
     await this.addHistory("staging_added", { planId, stagingId, name: config.name });
     await this.save();
 
@@ -1225,6 +1528,9 @@ export class StateManager {
     if (staging.status === "in_progress") {
       throw new StagingInvalidStateError(stagingId, staging.status, ["pending", "completed", "cancelled"]);
     }
+
+    // Invalidate cache for this plan
+    this.invalidatePlanCache(staging.planId);
 
     const plan = this.requirePlan(staging.planId);
 
@@ -1333,6 +1639,9 @@ export class StateManager {
     state.tasks[taskId] = task;
     staging.tasks.push(taskId);
 
+    // Invalidate cache for this plan
+    this.invalidatePlanCache(staging.planId);
+
     await this.addHistory("task_added", { stagingId, taskId, title: config.title });
     await this.save();
 
@@ -1346,6 +1655,9 @@ export class StateManager {
     if (task.status === "in_progress") {
       throw new TaskInvalidStateError(taskId, task.status, ["pending", "done", "blocked", "cancelled"]);
     }
+
+    // Invalidate cache for this plan
+    this.invalidatePlanCache(task.planId);
 
     const staging = this.requireStaging(task.stagingId);
 
@@ -1437,6 +1749,1354 @@ export class StateManager {
 
   isInitialized(): boolean {
     return this.state !== null;
+  }
+
+  // ============ Cached Status Methods ============
+  /**
+   * Get cached plan status or compute if not cached
+   */
+  getCachedPlanStatus(planId: string): PlanStatusCache | null {
+    if (!this.state) return null;
+
+    // Return cached if valid
+    if (this._planStatusCache.has(planId)) {
+      return this._planStatusCache.get(planId)!;
+    }
+
+    // Compute and cache
+    const plan = this.getPlan(planId);
+    if (!plan) return null;
+
+    const stagings = this.getStagingsByPlan(planId);
+    let totalTasks = 0;
+    let completedTasks = 0;
+    let completedStagingCount = 0;
+
+    for (const staging of stagings) {
+      if (staging.status === "completed") {
+        completedStagingCount++;
+      }
+      const tasks = this.getTasksByStaging(staging.id);
+      totalTasks += tasks.length;
+      completedTasks += tasks.filter(t => t.status === "done").length;
+    }
+
+    const cache: PlanStatusCache = {
+      totalTasks,
+      completedTasks,
+      stagingCount: stagings.length,
+      completedStagingCount,
+    };
+
+    this._planStatusCache.set(planId, cache);
+    return cache;
+  }
+
+  /**
+   * Check if status cache is valid
+   */
+  isStatusCacheValid(): boolean {
+    return this._statusCacheValid;
+  }
+
+  /**
+   * Mark status cache as valid (after full rebuild)
+   */
+  markStatusCacheValid(): void {
+    this._statusCacheValid = true;
+  }
+
+  /**
+   * Clear all caches
+   */
+  clearAllCaches(): void {
+    this._planStatusCache.clear();
+    this._statusCacheValid = false;
+  }
+
+  // ============ Template Operations ============
+  /**
+   * Create a new template
+   */
+  async createTemplate(config: {
+    name: string;
+    description?: string;
+    category?: TemplateCategory;
+    tags?: string[];
+    stagings?: TemplateStagingDef[];
+    variables?: Array<{
+      name: string;
+      description?: string;
+      defaultValue?: string;
+      required?: boolean;
+    }>;
+  }): Promise<Template> {
+    const state = this.ensureInitialized();
+
+    const now = new Date().toISOString();
+    const templateId = idGenerator.generateTemplateId();
+
+    const template: Template = {
+      id: templateId,
+      name: config.name,
+      description: config.description,
+      category: config.category ?? "custom",
+      tags: config.tags ?? [],
+      stagings: config.stagings ?? [],
+      variables: (config.variables ?? []).map(v => ({
+        name: v.name,
+        description: v.description,
+        defaultValue: v.defaultValue,
+        required: v.required ?? false,
+      })),
+      usageCount: 0,
+      isBuiltIn: false,
+      createdAt: now,
+      updatedAt: now,
+    };
+
+    state.templates[templateId] = template;
+    await this.addHistory("template_created", { templateId, name: config.name });
+    await this.save();
+
+    return template;
+  }
+
+  /**
+   * Get a template by ID
+   */
+  getTemplate(templateId: string): Template | undefined {
+    return this.state?.templates[templateId];
+  }
+
+  /**
+   * Get all templates
+   */
+  getAllTemplates(): Template[] {
+    if (!this.state) return [];
+    return Object.values(this.state.templates);
+  }
+
+  /**
+   * List templates with optional filtering
+   */
+  listTemplates(options?: {
+    category?: TemplateCategory;
+    tags?: string[];
+    includeBuiltIn?: boolean;
+  }): Template[] {
+    let templates = this.getAllTemplates();
+
+    if (options?.category) {
+      templates = templates.filter(t => t.category === options.category);
+    }
+
+    if (options?.tags && options.tags.length > 0) {
+      templates = templates.filter(t =>
+        options.tags!.some(tag => t.tags.includes(tag))
+      );
+    }
+
+    if (options?.includeBuiltIn === false) {
+      templates = templates.filter(t => !t.isBuiltIn);
+    }
+
+    // Sort by usage count (descending), then by name
+    return templates.sort((a, b) => {
+      if (b.usageCount !== a.usageCount) {
+        return b.usageCount - a.usageCount;
+      }
+      return a.name.localeCompare(b.name);
+    });
+  }
+
+  /**
+   * Update a template
+   */
+  async updateTemplate(
+    templateId: string,
+    updates: {
+      name?: string;
+      description?: string;
+      category?: TemplateCategory;
+      tags?: string[];
+      stagings?: TemplateStagingDef[];
+      variables?: Array<{
+        name: string;
+        description?: string;
+        defaultValue?: string;
+        required?: boolean;
+      }>;
+    }
+  ): Promise<Template> {
+    const state = this.ensureInitialized();
+    const template = state.templates[templateId];
+    if (!template) {
+      throw new Error(`Template not found: ${templateId}`);
+    }
+
+    if (template.isBuiltIn) {
+      throw new Error(`Cannot modify built-in template: ${templateId}`);
+    }
+
+    const now = new Date().toISOString();
+    if (updates.name !== undefined) template.name = updates.name;
+    if (updates.description !== undefined) template.description = updates.description;
+    if (updates.category !== undefined) template.category = updates.category;
+    if (updates.tags !== undefined) template.tags = updates.tags;
+    if (updates.stagings !== undefined) template.stagings = updates.stagings;
+    if (updates.variables !== undefined) {
+      template.variables = updates.variables.map(v => ({
+        name: v.name,
+        description: v.description,
+        defaultValue: v.defaultValue,
+        required: v.required ?? false,
+      }));
+    }
+    template.updatedAt = now;
+
+    await this.addHistory("template_updated", { templateId, updates: Object.keys(updates) });
+    await this.save();
+
+    return template;
+  }
+
+  /**
+   * Delete a template
+   */
+  async deleteTemplate(templateId: string): Promise<void> {
+    const state = this.ensureInitialized();
+    const template = state.templates[templateId];
+    if (!template) {
+      throw new Error(`Template not found: ${templateId}`);
+    }
+
+    if (template.isBuiltIn) {
+      throw new Error(`Cannot delete built-in template: ${templateId}`);
+    }
+
+    delete state.templates[templateId];
+    await this.addHistory("template_removed", { templateId, name: template.name });
+    await this.save();
+  }
+
+  /**
+   * Apply a template to create a new plan
+   */
+  async applyTemplate(
+    templateId: string,
+    planTitle: string,
+    planDescription?: string,
+    variables?: Record<string, string>
+  ): Promise<Plan> {
+    const state = this.ensureInitialized();
+    const template = state.templates[templateId];
+    if (!template) {
+      throw new Error(`Template not found: ${templateId}`);
+    }
+
+    // Check required variables
+    for (const variable of template.variables) {
+      if (variable.required && !variables?.[variable.name] && !variable.defaultValue) {
+        throw new Error(`Required variable '${variable.name}' not provided`);
+      }
+    }
+
+    // Function to substitute variables in text
+    const substituteVariables = (text: string): string => {
+      let result = text;
+      for (const variable of template.variables) {
+        const value = variables?.[variable.name] ?? variable.defaultValue ?? "";
+        result = result.replace(new RegExp(`\\$\\{${variable.name}\\}`, "g"), value);
+      }
+      return result;
+    };
+
+    // Build staging configs from template
+    const stagingConfigs = template.stagings.map(stagingDef => ({
+      name: substituteVariables(stagingDef.name),
+      description: stagingDef.description ? substituteVariables(stagingDef.description) : undefined,
+      execution_type: stagingDef.execution_type,
+      default_model: stagingDef.default_model,
+      session_budget: stagingDef.session_budget,
+      recommended_sessions: stagingDef.recommended_sessions,
+      tasks: stagingDef.tasks.map(taskDef => ({
+        title: substituteVariables(taskDef.title),
+        description: taskDef.description ? substituteVariables(taskDef.description) : undefined,
+        priority: taskDef.priority,
+        execution_mode: taskDef.execution_mode,
+        model: taskDef.model,
+        depends_on_index: taskDef.depends_on_index,
+      })),
+    }));
+
+    // Create the plan
+    const plan = await this.createPlan(
+      substituteVariables(planTitle),
+      planDescription ? substituteVariables(planDescription) : undefined,
+      stagingConfigs
+    );
+
+    // Update template usage stats
+    template.usageCount++;
+    template.lastUsedAt = new Date().toISOString();
+
+    await this.addHistory("template_applied", { templateId, planId: plan.id });
+    await this.save();
+
+    return plan;
+  }
+
+  // ============ Snapshot Operations ============
+  /**
+   * Create a snapshot of current state
+   */
+  async createSnapshot(config: {
+    name: string;
+    description?: string;
+    type?: SnapshotType;
+    trigger?: SnapshotTrigger;
+    planId?: string;
+    stagingId?: string;
+    tags?: string[];
+    expiresAt?: string;
+  }): Promise<Snapshot> {
+    const state = this.ensureInitialized();
+
+    const now = new Date().toISOString();
+    const snapshotId = idGenerator.generateSnapshotId();
+    const type = config.type ?? "full";
+
+    // Build snapshot data based on type
+    const data: SnapshotData = {};
+
+    if (type === "full") {
+      // Full snapshot - copy everything
+      data.plans = { ...state.plans };
+      data.stagings = { ...state.stagings };
+      data.tasks = { ...state.tasks };
+      data.templates = { ...state.templates };
+      data.memories = [...state.context.memories];
+    } else if (type === "plan" && config.planId) {
+      // Plan snapshot - copy specific plan and its related data
+      const plan = state.plans[config.planId];
+      if (!plan) {
+        throw new PlanNotFoundError(config.planId);
+      }
+      data.plans = { [config.planId]: plan };
+      data.stagings = {};
+      data.tasks = {};
+
+      for (const stagingId of plan.stagings) {
+        const staging = state.stagings[stagingId];
+        if (staging) {
+          data.stagings[stagingId] = staging;
+          for (const taskId of staging.tasks) {
+            const task = state.tasks[taskId];
+            if (task) {
+              data.tasks[taskId] = task;
+            }
+          }
+        }
+      }
+    } else if (type === "staging" && config.stagingId) {
+      // Staging snapshot - copy specific staging and its tasks
+      const staging = state.stagings[config.stagingId];
+      if (!staging) {
+        throw new StagingNotFoundError(config.stagingId);
+      }
+      data.stagings = { [config.stagingId]: staging };
+      data.tasks = {};
+
+      for (const taskId of staging.tasks) {
+        const task = state.tasks[taskId];
+        if (task) {
+          data.tasks[taskId] = task;
+        }
+      }
+    }
+
+    const snapshot: Snapshot = {
+      id: snapshotId,
+      name: config.name,
+      description: config.description,
+      type,
+      trigger: config.trigger ?? "manual",
+      planId: config.planId,
+      stagingId: config.stagingId,
+      data,
+      stateVersion: STATE_VERSION,
+      createdAt: now,
+      expiresAt: config.expiresAt,
+      tags: config.tags ?? [],
+    };
+
+    state.snapshots[snapshotId] = snapshot;
+    await this.addHistory("snapshot_created", { snapshotId, name: config.name, type });
+    await this.save();
+
+    return snapshot;
+  }
+
+  /**
+   * Get a snapshot by ID
+   */
+  getSnapshot(snapshotId: string): Snapshot | undefined {
+    return this.state?.snapshots[snapshotId];
+  }
+
+  /**
+   * List snapshots with optional filtering
+   */
+  listSnapshots(options?: {
+    type?: SnapshotType;
+    planId?: string;
+    tags?: string[];
+    limit?: number;
+  }): Snapshot[] {
+    if (!this.state) return [];
+
+    let snapshots = Object.values(this.state.snapshots);
+
+    if (options?.type) {
+      snapshots = snapshots.filter(s => s.type === options.type);
+    }
+
+    if (options?.planId) {
+      snapshots = snapshots.filter(s => s.planId === options.planId);
+    }
+
+    if (options?.tags && options.tags.length > 0) {
+      snapshots = snapshots.filter(s =>
+        options.tags!.some(tag => s.tags.includes(tag))
+      );
+    }
+
+    // Sort by creation date (newest first)
+    snapshots.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
+    if (options?.limit) {
+      snapshots = snapshots.slice(0, options.limit);
+    }
+
+    return snapshots;
+  }
+
+  /**
+   * Restore state from a snapshot
+   */
+  async restoreSnapshot(
+    snapshotId: string,
+    options?: {
+      restorePlans?: boolean;
+      restoreStagings?: boolean;
+      restoreTasks?: boolean;
+      restoreTemplates?: boolean;
+      restoreMemories?: boolean;
+      createBackup?: boolean;
+    }
+  ): Promise<{ restoredItems: Record<string, number>; backupSnapshotId?: string }> {
+    const state = this.ensureInitialized();
+    const snapshot = state.snapshots[snapshotId];
+    if (!snapshot) {
+      throw new Error(`Snapshot not found: ${snapshotId}`);
+    }
+
+    const opts = {
+      restorePlans: options?.restorePlans ?? true,
+      restoreStagings: options?.restoreStagings ?? true,
+      restoreTasks: options?.restoreTasks ?? true,
+      restoreTemplates: options?.restoreTemplates ?? false,
+      restoreMemories: options?.restoreMemories ?? false,
+      createBackup: options?.createBackup ?? true,
+    };
+
+    // Create backup before restore if requested
+    let backupSnapshotId: string | undefined;
+    if (opts.createBackup) {
+      const backup = await this.createSnapshot({
+        name: `Backup before restore from ${snapshot.name}`,
+        type: "full",
+        trigger: "auto",
+        tags: ["backup", "pre-restore"],
+      });
+      backupSnapshotId = backup.id;
+    }
+
+    const restoredItems = {
+      plans: 0,
+      stagings: 0,
+      tasks: 0,
+      templates: 0,
+      memories: 0,
+    };
+
+    // Restore plans
+    if (opts.restorePlans && snapshot.data.plans) {
+      for (const [planId, plan] of Object.entries(snapshot.data.plans)) {
+        state.plans[planId] = plan;
+        restoredItems.plans += 1;
+        this.invalidatePlanCache(planId);
+      }
+    }
+
+    // Restore stagings
+    if (opts.restoreStagings && snapshot.data.stagings) {
+      for (const [stagingId, staging] of Object.entries(snapshot.data.stagings)) {
+        state.stagings[stagingId] = staging;
+        restoredItems.stagings += 1;
+      }
+    }
+
+    // Restore tasks
+    if (opts.restoreTasks && snapshot.data.tasks) {
+      for (const [taskId, task] of Object.entries(snapshot.data.tasks)) {
+        state.tasks[taskId] = task;
+        restoredItems.tasks += 1;
+      }
+    }
+
+    // Restore templates
+    if (opts.restoreTemplates && snapshot.data.templates) {
+      for (const [templateId, template] of Object.entries(snapshot.data.templates)) {
+        state.templates[templateId] = template;
+        restoredItems.templates += 1;
+      }
+    }
+
+    // Restore memories
+    if (opts.restoreMemories && snapshot.data.memories) {
+      state.context.memories = snapshot.data.memories;
+      restoredItems.memories = snapshot.data.memories.length;
+    }
+
+    await this.addHistory("snapshot_restored", { snapshotId, restoredItems, backupSnapshotId });
+    await this.save();
+
+    return { restoredItems, backupSnapshotId };
+  }
+
+  /**
+   * Delete a snapshot
+   */
+  async deleteSnapshot(snapshotId: string): Promise<void> {
+    const state = this.ensureInitialized();
+    const snapshot = state.snapshots[snapshotId];
+    if (!snapshot) {
+      throw new Error(`Snapshot not found: ${snapshotId}`);
+    }
+
+    delete state.snapshots[snapshotId];
+    await this.addHistory("snapshot_removed", { snapshotId, name: snapshot.name });
+    await this.save();
+  }
+
+  /**
+   * Clean up expired snapshots
+   */
+  async cleanupExpiredSnapshots(): Promise<number> {
+    const state = this.ensureInitialized();
+    const now = new Date();
+    let deletedCount = 0;
+
+    const snapshotIds = Object.keys(state.snapshots);
+    for (const snapshotId of snapshotIds) {
+      const snapshot = state.snapshots[snapshotId];
+      if (snapshot?.expiresAt && new Date(snapshot.expiresAt) < now) {
+        delete state.snapshots[snapshotId];
+        deletedCount++;
+      }
+    }
+
+    if (deletedCount > 0) {
+      await this.save();
+    }
+
+    return deletedCount;
+  }
+
+  // ============ Search Operations ============
+  /**
+   * Search across all entities
+   */
+  search(query: SearchQuery): SearchResult {
+    const startTime = Date.now();
+    const state = this.ensureInitialized();
+
+    const results: SearchResultItem[] = [];
+    const entityTypes = query.entityTypes ?? ["plan", "staging", "task", "template", "memory", "decision", "snapshot"];
+
+    // Search plans
+    if (entityTypes.includes("plan")) {
+      for (const plan of Object.values(state.plans)) {
+        if (!query.includeArchived && plan.status === "archived") continue;
+        const result = this.matchEntity("plan", plan.id, plan, query);
+        if (result) results.push(result);
+      }
+    }
+
+    // Search stagings
+    if (entityTypes.includes("staging")) {
+      for (const staging of Object.values(state.stagings)) {
+        const result = this.matchEntity("staging", staging.id, staging, query);
+        if (result) results.push(result);
+      }
+    }
+
+    // Search tasks
+    if (entityTypes.includes("task")) {
+      for (const task of Object.values(state.tasks)) {
+        const result = this.matchEntity("task", task.id, task, query);
+        if (result) results.push(result);
+      }
+    }
+
+    // Search templates
+    if (entityTypes.includes("template")) {
+      for (const template of Object.values(state.templates)) {
+        const result = this.matchEntity("template", template.id, template, query);
+        if (result) results.push(result);
+      }
+    }
+
+    // Search memories
+    if (entityTypes.includes("memory")) {
+      for (const memory of state.context.memories) {
+        const result = this.matchEntity("memory", memory.id, memory, query);
+        if (result) results.push(result);
+      }
+    }
+
+    // Search decisions
+    if (entityTypes.includes("decision")) {
+      for (const decision of state.context.decisions) {
+        const result = this.matchEntity("decision", decision.id, decision, query);
+        if (result) results.push(result);
+      }
+    }
+
+    // Search snapshots
+    if (entityTypes.includes("snapshot")) {
+      for (const snapshot of Object.values(state.snapshots)) {
+        const result = this.matchEntity("snapshot", snapshot.id, snapshot, query);
+        if (result) results.push(result);
+      }
+    }
+
+    // Sort results
+    if (query.sort && query.sort.length > 0) {
+      results.sort((a, b) => {
+        for (const sort of query.sort) {
+          const aVal = this.getNestedValue(a.data, sort.field);
+          const bVal = this.getNestedValue(b.data, sort.field);
+          const cmp = this.compareValues(aVal, bVal);
+          if (cmp !== 0) {
+            return sort.order === "desc" ? -cmp : cmp;
+          }
+        }
+        return b.score - a.score; // Default: sort by score
+      });
+    } else {
+      // Default: sort by score (descending)
+      results.sort((a, b) => b.score - a.score);
+    }
+
+    // Apply pagination
+    const total = results.length;
+    const offset = query.offset ?? 0;
+    const limit = query.limit ?? 20;
+    const paginatedResults = results.slice(offset, offset + limit);
+
+    return {
+      query,
+      results: paginatedResults,
+      total,
+      executionTimeMs: Date.now() - startTime,
+    };
+  }
+
+  /**
+   * Match an entity against search query
+   */
+  private matchEntity(
+    entityType: SearchEntityType,
+    entityId: string,
+    entity: Record<string, unknown>,
+    query: SearchQuery
+  ): SearchResultItem | null {
+    let score = 0;
+    const matches: Array<{ field: string; snippet: string }> = [];
+
+    // Text search
+    if (query.query) {
+      const searchText = query.query.toLowerCase();
+      const textFields = this.getTextFields(entity);
+
+      for (const { field, value } of textFields) {
+        const lowerValue = value.toLowerCase();
+        if (lowerValue.includes(searchText)) {
+          score += 1;
+          // Create snippet
+          const idx = lowerValue.indexOf(searchText);
+          const start = Math.max(0, idx - 20);
+          const end = Math.min(value.length, idx + searchText.length + 20);
+          let snippet = value.substring(start, end);
+          if (start > 0) snippet = "..." + snippet;
+          if (end < value.length) snippet = snippet + "...";
+          matches.push({ field, snippet });
+        }
+      }
+    }
+
+    // Apply filters
+    for (const filter of query.filters) {
+      const fieldValue = this.getNestedValue(entity, filter.field);
+      if (!this.matchFilter(fieldValue, filter)) {
+        return null; // Filter not matched
+      }
+      score += 0.5; // Bonus for matching filter
+    }
+
+    // If no query provided but filters matched, still include
+    if (!query.query && query.filters.length > 0) {
+      score = 1;
+    }
+
+    // Skip if no matches
+    if (score === 0) {
+      return null;
+    }
+
+    // Build lightweight data
+    const lightweightData: Record<string, unknown> = {
+      id: entityId,
+    };
+
+    // Add common fields
+    if ("title" in entity) lightweightData.title = entity.title;
+    if ("name" in entity) lightweightData.name = entity.name;
+    if ("status" in entity) lightweightData.status = entity.status;
+    if ("createdAt" in entity) lightweightData.createdAt = entity.createdAt;
+    if ("updatedAt" in entity) lightweightData.updatedAt = entity.updatedAt;
+
+    return {
+      entityType,
+      entityId,
+      score: Math.min(score, 1), // Normalize to 0-1
+      matches,
+      data: lightweightData,
+    };
+  }
+
+  /**
+   * Get all text fields from an entity
+   */
+  private getTextFields(entity: Record<string, unknown>): Array<{ field: string; value: string }> {
+    const textFields: Array<{ field: string; value: string }> = [];
+    const textFieldNames = ["title", "name", "description", "content", "summary", "decision", "rationale"];
+
+    for (const field of textFieldNames) {
+      if (field in entity && typeof entity[field] === "string") {
+        textFields.push({ field, value: entity[field] as string });
+      }
+    }
+
+    // Also check tags
+    if ("tags" in entity && Array.isArray(entity.tags)) {
+      for (const tag of entity.tags as string[]) {
+        textFields.push({ field: "tags", value: tag });
+      }
+    }
+
+    return textFields;
+  }
+
+  /**
+   * Get nested value from an object
+   */
+  private getNestedValue(obj: Record<string, unknown>, path: string): unknown {
+    const parts = path.split(".");
+    let current: unknown = obj;
+    for (const part of parts) {
+      if (current === null || current === undefined) return undefined;
+      if (typeof current !== "object") return undefined;
+      current = (current as Record<string, unknown>)[part];
+    }
+    return current;
+  }
+
+  /**
+   * Compare two values for sorting
+   */
+  private compareValues(a: unknown, b: unknown): number {
+    if (a === b) return 0;
+    if (a === undefined || a === null) return 1;
+    if (b === undefined || b === null) return -1;
+
+    if (typeof a === "string" && typeof b === "string") {
+      return a.localeCompare(b);
+    }
+
+    if (typeof a === "number" && typeof b === "number") {
+      return a - b;
+    }
+
+    // For dates (ISO strings)
+    if (typeof a === "string" && typeof b === "string") {
+      const dateA = new Date(a);
+      const dateB = new Date(b);
+      if (!isNaN(dateA.getTime()) && !isNaN(dateB.getTime())) {
+        return dateA.getTime() - dateB.getTime();
+      }
+    }
+
+    return String(a).localeCompare(String(b));
+  }
+
+  /**
+   * Match a field value against a filter
+   */
+  private matchFilter(fieldValue: unknown, filter: SearchFilter): boolean {
+    const { operator, value } = filter;
+
+    switch (operator) {
+      case "eq":
+        return fieldValue === value;
+      case "neq":
+        return fieldValue !== value;
+      case "contains":
+        if (typeof fieldValue !== "string" || typeof value !== "string") return false;
+        return fieldValue.toLowerCase().includes(value.toLowerCase());
+      case "startsWith":
+        if (typeof fieldValue !== "string" || typeof value !== "string") return false;
+        return fieldValue.toLowerCase().startsWith(value.toLowerCase());
+      case "endsWith":
+        if (typeof fieldValue !== "string" || typeof value !== "string") return false;
+        return fieldValue.toLowerCase().endsWith(value.toLowerCase());
+      case "gt":
+        return this.compareValues(fieldValue, value) > 0;
+      case "gte":
+        return this.compareValues(fieldValue, value) >= 0;
+      case "lt":
+        return this.compareValues(fieldValue, value) < 0;
+      case "lte":
+        return this.compareValues(fieldValue, value) <= 0;
+      case "in":
+        if (!Array.isArray(value)) return false;
+        return value.includes(fieldValue as string);
+      case "notIn":
+        if (!Array.isArray(value)) return false;
+        return !value.includes(fieldValue as string);
+      case "exists":
+        return fieldValue !== undefined && fieldValue !== null;
+      case "regex":
+        if (typeof fieldValue !== "string" || typeof value !== "string") return false;
+        try {
+          return new RegExp(value, "i").test(fieldValue);
+        } catch {
+          return false;
+        }
+      default:
+        return true;
+    }
+  }
+
+  // ============ Bulk Operations ============
+  /**
+   * Bulk update multiple tasks
+   */
+  async bulkUpdateTasks(updates: Array<{
+    taskId: string;
+    status?: TaskStatus;
+    priority?: "high" | "medium" | "low";
+    notes?: string;
+  }>): Promise<BulkUpdateResult<Task>> {
+    const now = new Date().toISOString();
+    const results: BulkUpdateResult<Task>["results"] = [];
+    let successCount = 0;
+    let failedCount = 0;
+
+    for (const update of updates) {
+      try {
+        const task = this.getTask(update.taskId);
+        if (!task) {
+          results.push({ id: update.taskId, success: false, error: "Task not found" });
+          failedCount++;
+          continue;
+        }
+
+        // Validate status transition if status is being updated
+        if (update.status) {
+          const allowedTransitions = VALID_TASK_TRANSITIONS[task.status];
+          if (!allowedTransitions.includes(update.status)) {
+            results.push({
+              id: update.taskId,
+              success: false,
+              error: `Invalid transition: ${task.status} -> ${update.status}`,
+            });
+            failedCount++;
+            continue;
+          }
+          task.status = update.status;
+          if (update.status === "in_progress") task.startedAt = now;
+          if (update.status === "done") task.completedAt = now;
+        }
+
+        if (update.priority) task.priority = update.priority;
+        if (update.notes) task.notes = update.notes;
+        task.updatedAt = now;
+
+        this.invalidatePlanCache(task.planId);
+        results.push({ id: update.taskId, success: true, data: task });
+        successCount++;
+      } catch (error) {
+        results.push({
+          id: update.taskId,
+          success: false,
+          error: error instanceof Error ? error.message : "Unknown error",
+        });
+        failedCount++;
+      }
+    }
+
+    await this.save();
+
+    return { success: successCount, failed: failedCount, results };
+  }
+
+  /**
+   * Bulk delete tasks
+   */
+  async bulkDeleteTasks(taskIds: string[]): Promise<BulkDeleteResult> {
+    const state = this.ensureInitialized();
+    let deletedCount = 0;
+    let failedCount = 0;
+    const errors: Array<{ id: string; error: string }> = [];
+
+    for (const taskId of taskIds) {
+      try {
+        const task = state.tasks[taskId];
+        if (!task) {
+          errors.push({ id: taskId, error: "Task not found" });
+          failedCount++;
+          continue;
+        }
+
+        if (task.status === "in_progress") {
+          errors.push({ id: taskId, error: "Cannot delete in-progress task" });
+          failedCount++;
+          continue;
+        }
+
+        // Remove from staging
+        const staging = state.stagings[task.stagingId];
+        if (staging) {
+          staging.tasks = staging.tasks.filter(id => id !== taskId);
+        }
+
+        // Remove from other tasks' dependencies
+        for (const t of Object.values(state.tasks)) {
+          t.depends_on = t.depends_on.filter(id => id !== taskId);
+        }
+
+        this.invalidatePlanCache(task.planId);
+        delete state.tasks[taskId];
+        deletedCount++;
+      } catch (error) {
+        errors.push({
+          id: taskId,
+          error: error instanceof Error ? error.message : "Unknown error",
+        });
+        failedCount++;
+      }
+    }
+
+    await this.save();
+
+    return { deleted: deletedCount, failed: failedCount, errors };
+  }
+
+  /**
+   * Bulk update memories
+   */
+  async bulkUpdateMemories(updates: Array<{
+    memoryId: string;
+    enabled?: boolean;
+    priority?: number;
+  }>): Promise<BulkUpdateResult<Memory>> {
+    const state = this.ensureInitialized();
+    const now = new Date().toISOString();
+    const results: BulkUpdateResult<Memory>["results"] = [];
+    let successCount = 0;
+    let failedCount = 0;
+
+    for (const update of updates) {
+      const memory = state.context.memories.find(m => m.id === update.memoryId);
+      if (!memory) {
+        results.push({ id: update.memoryId, success: false, error: "Memory not found" });
+        failedCount++;
+        continue;
+      }
+
+      if (update.enabled !== undefined) memory.enabled = update.enabled;
+      if (update.priority !== undefined) memory.priority = update.priority;
+      memory.updatedAt = now;
+
+      results.push({ id: update.memoryId, success: true, data: memory });
+      successCount++;
+    }
+
+    await this.save();
+
+    return { success: successCount, failed: failedCount, results };
+  }
+
+  // ============ Pagination Operations ============
+  /**
+   * Get plans with pagination
+   */
+  getPlansWithPagination(options: {
+    page?: number;
+    pageSize?: number;
+    status?: PlanStatus | PlanStatus[];
+    sortBy?: string;
+    sortOrder?: "asc" | "desc";
+  }): PaginatedResult<Plan> {
+    const page = options.page ?? 1;
+    const pageSize = options.pageSize ?? 20;
+
+    let plans = this.getAllPlans();
+
+    // Filter by status
+    if (options.status) {
+      const statuses = Array.isArray(options.status) ? options.status : [options.status];
+      plans = plans.filter(p => statuses.includes(p.status));
+    }
+
+    // Sort
+    const sortBy = options.sortBy ?? "updatedAt";
+    const sortOrder = options.sortOrder ?? "desc";
+    plans.sort((a, b) => {
+      const aVal = this.getNestedValue(a as unknown as Record<string, unknown>, sortBy);
+      const bVal = this.getNestedValue(b as unknown as Record<string, unknown>, sortBy);
+      const cmp = this.compareValues(aVal, bVal);
+      return sortOrder === "desc" ? -cmp : cmp;
+    });
+
+    // Paginate
+    const totalItems = plans.length;
+    const totalPages = Math.ceil(totalItems / pageSize);
+    const startIndex = (page - 1) * pageSize;
+    const endIndex = Math.min(startIndex + pageSize - 1, totalItems - 1);
+    const items = plans.slice(startIndex, startIndex + pageSize);
+
+    return {
+      items,
+      pagination: {
+        page,
+        pageSize,
+        totalItems,
+        totalPages,
+        hasPrevious: page > 1,
+        hasNext: page < totalPages,
+        startIndex,
+        endIndex: Math.max(endIndex, 0),
+      },
+    };
+  }
+
+  /**
+   * Get tasks with pagination
+   */
+  getTasksWithPagination(options: {
+    stagingId?: string;
+    planId?: string;
+    status?: TaskStatus | TaskStatus[];
+    priority?: "high" | "medium" | "low";
+    page?: number;
+    pageSize?: number;
+    sortBy?: string;
+    sortOrder?: "asc" | "desc";
+  }): PaginatedResult<Task> {
+    const page = options.page ?? 1;
+    const pageSize = options.pageSize ?? 20;
+
+    let tasks: Task[] = [];
+
+    if (options.stagingId) {
+      tasks = this.getTasksByStaging(options.stagingId);
+    } else if (options.planId) {
+      const stagings = this.getStagingsByPlan(options.planId);
+      for (const staging of stagings) {
+        tasks.push(...this.getTasksByStaging(staging.id));
+      }
+    } else {
+      tasks = this.state ? Object.values(this.state.tasks) : [];
+    }
+
+    // Filter by status
+    if (options.status) {
+      const statuses = Array.isArray(options.status) ? options.status : [options.status];
+      tasks = tasks.filter(t => statuses.includes(t.status));
+    }
+
+    // Filter by priority
+    if (options.priority) {
+      tasks = tasks.filter(t => t.priority === options.priority);
+    }
+
+    // Sort
+    const sortBy = options.sortBy ?? "order";
+    const sortOrder = options.sortOrder ?? "asc";
+    tasks.sort((a, b) => {
+      const aVal = this.getNestedValue(a as unknown as Record<string, unknown>, sortBy);
+      const bVal = this.getNestedValue(b as unknown as Record<string, unknown>, sortBy);
+      const cmp = this.compareValues(aVal, bVal);
+      return sortOrder === "desc" ? -cmp : cmp;
+    });
+
+    // Paginate
+    const totalItems = tasks.length;
+    const totalPages = Math.ceil(totalItems / pageSize);
+    const startIndex = (page - 1) * pageSize;
+    const endIndex = Math.min(startIndex + pageSize - 1, totalItems - 1);
+    const items = tasks.slice(startIndex, startIndex + pageSize);
+
+    return {
+      items,
+      pagination: {
+        page,
+        pageSize,
+        totalItems,
+        totalPages,
+        hasPrevious: page > 1,
+        hasNext: page < totalPages,
+        startIndex,
+        endIndex: Math.max(endIndex, 0),
+      },
+    };
+  }
+
+  /**
+   * Get templates with pagination
+   */
+  getTemplatesWithPagination(options: {
+    category?: TemplateCategory;
+    page?: number;
+    pageSize?: number;
+    sortBy?: string;
+    sortOrder?: "asc" | "desc";
+  }): PaginatedResult<Template> {
+    const page = options.page ?? 1;
+    const pageSize = options.pageSize ?? 20;
+
+    let templates = this.getAllTemplates();
+
+    // Filter by category
+    if (options.category) {
+      templates = templates.filter(t => t.category === options.category);
+    }
+
+    // Sort
+    const sortBy = options.sortBy ?? "usageCount";
+    const sortOrder = options.sortOrder ?? "desc";
+    templates.sort((a, b) => {
+      const aVal = this.getNestedValue(a as unknown as Record<string, unknown>, sortBy);
+      const bVal = this.getNestedValue(b as unknown as Record<string, unknown>, sortBy);
+      const cmp = this.compareValues(aVal, bVal);
+      return sortOrder === "desc" ? -cmp : cmp;
+    });
+
+    // Paginate
+    const totalItems = templates.length;
+    const totalPages = Math.ceil(totalItems / pageSize);
+    const startIndex = (page - 1) * pageSize;
+    const endIndex = Math.min(startIndex + pageSize - 1, totalItems - 1);
+    const items = templates.slice(startIndex, startIndex + pageSize);
+
+    return {
+      items,
+      pagination: {
+        page,
+        pageSize,
+        totalItems,
+        totalPages,
+        hasPrevious: page > 1,
+        hasNext: page < totalPages,
+        startIndex,
+        endIndex: Math.max(endIndex, 0),
+      },
+    };
+  }
+
+  // ============ Lazy Loading Operations ============
+  /**
+   * Get plan with optional lazy loading (without tasks details)
+   */
+  getPlanLazy(planId: string, options?: { includeTasks?: boolean }): {
+    plan: Plan | undefined;
+    stagings: Staging[];
+    taskCount: number;
+    tasks?: Task[];
+  } | null {
+    const plan = this.getPlan(planId);
+    if (!plan) return null;
+
+    const stagings = this.getStagingsByPlan(planId);
+    let taskCount = 0;
+    let tasks: Task[] | undefined;
+
+    for (const staging of stagings) {
+      taskCount += staging.tasks.length;
+    }
+
+    if (options?.includeTasks) {
+      tasks = [];
+      for (const staging of stagings) {
+        tasks.push(...this.getTasksByStaging(staging.id));
+      }
+    }
+
+    return { plan, stagings, taskCount, tasks };
+  }
+
+  /**
+   * Get staging with optional task loading
+   */
+  getStagingLazy(stagingId: string, options?: { includeTasks?: boolean; includeOutputs?: boolean }): {
+    staging: Staging | undefined;
+    taskCount: number;
+    tasks?: Array<Omit<Task, "output"> & { output?: TaskOutput }>;
+  } | null {
+    const staging = this.getStaging(stagingId);
+    if (!staging) return null;
+
+    const taskCount = staging.tasks.length;
+    let tasks: Array<Omit<Task, "output"> & { output?: TaskOutput }> | undefined;
+
+    if (options?.includeTasks) {
+      const rawTasks = this.getTasksByStaging(stagingId);
+      if (options?.includeOutputs) {
+        tasks = rawTasks;
+      } else {
+        // Exclude outputs to reduce payload
+        tasks = rawTasks.map(({ output, ...rest }) => rest);
+      }
+    }
+
+    return { staging, taskCount, tasks };
+  }
+
+  /**
+   * Load task outputs on demand (for lazy loading)
+   */
+  getTaskOutputs(taskIds: string[]): Record<string, TaskOutput | null> {
+    const outputs: Record<string, TaskOutput | null> = {};
+    for (const taskId of taskIds) {
+      const task = this.getTask(taskId);
+      outputs[taskId] = task?.output ?? null;
+    }
+    return outputs;
+  }
+
+  /**
+   * Get lightweight plan list (for dashboard/overview)
+   */
+  getLightweightPlanList(): Array<{
+    id: string;
+    title: string;
+    status: PlanStatus;
+    stagingCount: number;
+    taskCount: number;
+    completedTaskCount: number;
+    progressPercent: number;
+    createdAt: string;
+    updatedAt: string;
+  }> {
+    const plans = this.getAllPlans();
+    return plans.map(plan => {
+      const cache = this.getCachedPlanStatus(plan.id);
+      return {
+        id: plan.id,
+        title: plan.title,
+        status: plan.status,
+        stagingCount: cache?.stagingCount ?? plan.stagings.length,
+        taskCount: cache?.totalTasks ?? 0,
+        completedTaskCount: cache?.completedTasks ?? 0,
+        progressPercent: cache && cache.totalTasks > 0
+          ? Math.round((cache.completedTasks / cache.totalTasks) * 100)
+          : 0,
+        createdAt: plan.createdAt,
+        updatedAt: plan.updatedAt,
+      };
+    });
+  }
+
+  // ============ Built-in Templates ============
+  /**
+   * Load built-in templates into state
+   * @param overwrite - If true, overwrite existing built-in templates
+   * @returns Number of templates loaded
+   */
+  async loadBuiltInTemplates(overwrite: boolean = false): Promise<number> {
+    const state = this.ensureInitialized();
+
+    // Dynamic import to avoid circular dependencies
+    const { getBuiltInTemplates } = await import("../templates/index.js");
+    const builtInTemplates = getBuiltInTemplates();
+
+    let loadedCount = 0;
+
+    for (const template of builtInTemplates) {
+      // Check if template already exists by name
+      const existing = this.getAllTemplates().find(
+        t => t.isBuiltIn && t.name === template.name
+      );
+
+      if (existing && !overwrite) {
+        continue;
+      }
+
+      // Remove existing if overwriting
+      if (existing && overwrite) {
+        delete state.templates[existing.id];
+      }
+
+      // Create the template
+      const now = new Date().toISOString();
+      const templateId = idGenerator.generateTemplateId();
+
+      const newTemplate: Template = {
+        id: templateId,
+        name: template.name,
+        description: template.description,
+        category: template.category,
+        tags: template.tags,
+        stagings: template.stagings,
+        variables: template.variables,
+        usageCount: 0,
+        isBuiltIn: true,
+        createdAt: now,
+        updatedAt: now,
+      };
+
+      state.templates[templateId] = newTemplate;
+      loadedCount++;
+    }
+
+    if (loadedCount > 0) {
+      await this.save();
+    }
+
+    return loadedCount;
+  }
+
+  /**
+   * Check if built-in templates are loaded
+   */
+  hasBuiltInTemplates(): boolean {
+    const templates = this.getAllTemplates();
+    return templates.some(t => t.isBuiltIn);
   }
 }
 

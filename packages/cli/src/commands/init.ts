@@ -159,6 +159,21 @@ These commands are used AFTER planning, when user explicitly requests execution:
 1. **Plan** (this command): Create and review the plan
 2. **User Review**: User reviews and approves the plan
 3. **Execute** (separate step): User runs \`zscode:start\` to begin
+
+## ⚠️ CRITICAL: User Consent Required
+
+**NEVER automatically start staging phases.** When a user says things like:
+- "플랜을 진행해" / "Continue the plan"
+- "다음 단계 진행" / "Next phase"
+- "작업 시작해" / "Start working"
+
+You MUST:
+1. First show the current status with \`zscode:status\`
+2. Present the staging details to the user
+3. **Ask for explicit confirmation** before calling \`zscode:start\`
+4. Only proceed after user approval
+
+This applies even when resuming work in a new session.
 `;
 }
 

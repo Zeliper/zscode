@@ -41,6 +41,39 @@ This command enters planning mode for the current project.
 - Use `get_full_context` with `lightweight: true` when full state is needed
 - Avoid calling `get_full_context` without options (large context usage)
 
+## ⚠️ CRITICAL: Model Selection for Tasks
+
+When creating tasks with `create_plan`, you MUST specify the appropriate model for each task:
+
+### Use `model: "opus"` for:
+- **Code writing**: New code, functions, classes, modules
+- **Code modification**: Refactoring, bug fixes, feature additions
+- **Code analysis**: Understanding complex logic, debugging, code review
+- **Architecture decisions**: Design patterns, system design
+
+### Use `model: "sonnet"` for:
+- Documentation writing
+- Configuration file changes
+- Simple file operations
+- Test execution and reporting
+
+### Use `model: "haiku"` for:
+- Status checks
+- Simple queries
+- File listing operations
+- Quick validations
+
+**Example:**
+```json
+{
+  "tasks": [
+    { "title": "Implement auth middleware", "model": "opus" },
+    { "title": "Update README", "model": "sonnet" },
+    { "title": "Run tests", "model": "haiku" }
+  ]
+}
+```
+
 ## Execution Commands (NOT part of planning)
 
 These commands are used AFTER planning, when user explicitly requests execution:
@@ -56,3 +89,18 @@ These commands are used AFTER planning, when user explicitly requests execution:
 1. **Plan** (this command): Create and review the plan
 2. **User Review**: User reviews and approves the plan
 3. **Execute** (separate step): User runs `zscode:start` to begin
+
+## ⚠️ CRITICAL: User Consent Required
+
+**NEVER automatically start staging phases.** When a user says things like:
+- "플랜을 진행해" / "Continue the plan"
+- "다음 단계 진행" / "Next phase"
+- "작업 시작해" / "Start working"
+
+You MUST:
+1. First show the current status with `zscode:status`
+2. Present the staging details to the user
+3. **Ask for explicit confirmation** before calling `zscode:start`
+4. Only proceed after user approval
+
+This applies even when resuming work in a new session.

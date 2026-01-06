@@ -7,6 +7,9 @@ Claude Code용 프로젝트 관리 플러그인입니다. MCP 서버 기반으�
 - **Staging System**: 작업을 단계(Stage)로 나누어 병렬/순차 실행 관리
 - **Artifacts**: 각 Staging의 결과물을 저장하고 다음 단계에서 참조 가능
 - **MCP Tools**: 컨텍스트 소모 최소화를 위한 MCP 기반 명령어
+- **Human-Readable Output**: 기본적으로 읽기 쉬운 마크다운 형식 출력 (JSON은 `json: true` 옵션)
+- **Smart Session Management**: Staging 완료 시 다음 Staging의 Context 소모량 및 진행 추천
+- **Model Selection**: Task별 적절한 모델(opus/sonnet/haiku) 지정 지원
 - **Windows 호환**: Windows 환경에서도 문제 없이 동작
 
 ## Installation
@@ -95,19 +98,95 @@ zscode:cancel plan-abc12345 --reason "요구사항 변경"
 
 ## MCP Tools
 
+### Core Tools
+
 | Tool | Description |
 |------|-------------|
-| `get_full_context` | 프로젝트 전체 상태 조회 |
+| `get_full_context` | 프로젝트 전체 상태 조회 (`lightweight: true` 권장) |
 | `init_project` | 새 프로젝트 초기화 |
 | `create_plan` | Plan + Staging + Task 생성 |
 | `zscode:start` | Staging 시작 |
-| `zscode:status` | 상태 조회 |
+| `zscode:status` | 상태 조회 (기본: Human-readable) |
 | `zscode:archive` | Plan 아카이브 |
 | `zscode:cancel` | Plan 취소 |
 | `update_task` | Task 상태 변경 |
 | `save_task_output` | Task 결과물 저장 |
 | `get_staging_artifacts` | 이전 Staging 결과물 조회 |
+| `complete_staging` | Staging 수동 완료 (다음 Staging 추천 포함) |
 | `add_decision` | 설계 결정사항 기록 |
+
+### Memory Tools
+
+| Tool | Description |
+|------|-------------|
+| `add_memory` | 규칙/메모리 추가 |
+| `list_memories` | 메모리 목록 조회 |
+| `update_memory` | 메모리 수정 |
+| `remove_memory` | 메모리 삭제 |
+| `get_memories_for_context` | 컨텍스트별 메모리 조회 |
+| `generate_summary` | 프로젝트 요약 생성 |
+
+### Plan/Staging/Task Modification
+
+| Tool | Description |
+|------|-------------|
+| `update_plan` | Plan 제목/설명 수정 |
+| `add_staging` | Staging 추가 |
+| `update_staging` | Staging 수정 |
+| `remove_staging` | Staging 삭제 |
+| `add_task` | Task 추가 |
+| `update_task_details` | Task 상세 수정 |
+| `remove_task` | Task 삭제 |
+
+## Model Selection
+
+Task 생성 시 작업 유형에 따라 적절한 모델을 지정합니다:
+
+| Model | 사용 용도 |
+|-------|----------|
+| `opus` | 코드 작성/수정, 코드 분석, 아키텍처 설계 |
+| `sonnet` | 문서 작성, 설정 파일 변경, 테스트 실행 |
+| `haiku` | 상태 확인, 간단한 쿼리, 파일 목록 조회 |
+
+```json
+{
+  "tasks": [
+    { "title": "API 엔드포인트 구현", "model": "opus" },
+    { "title": "README 업데이트", "model": "sonnet" },
+    { "title": "빌드 상태 확인", "model": "haiku" }
+  ]
+}
+```
+
+## Output Formats
+
+모든 MCP 도구는 기본적으로 Human-readable 마크다운 형식으로 출력합니다.
+JSON 형식이 필요한 경우 `json: true` 옵션을 사용합니다.
+
+```
+# Human-readable (기본)
+zscode:status plan-abc12345
+
+# JSON 형식
+zscode:status plan-abc12345 json:true
+```
+
+### Staging 완료 시 출력 예시
+
+```markdown
+✅ Staging completed: **Phase 1: Setup**
+
+## Next Staging
+📋 **Phase 2: Implementation** (staging-0002)
+   Tasks: 5 | Execution: parallel
+   Est. Context: ~10K tokens
+
+### Recommendation
+▶️ **Continue**
+   This staging has minimal context requirements. Safe to continue in current session.
+
+▶️ To proceed: `zscode:start plan-abc12345 staging-0002`
+```
 
 ## State Schema (v2.0.0)
 

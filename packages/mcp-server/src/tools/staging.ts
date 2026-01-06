@@ -10,13 +10,12 @@ import {
   StagingPlanMismatchError,
   TaskNotFoundError,
 } from "../errors/index.js";
-import type { TaskOutput, Memory, RelatedStagingArtifacts, SessionBudget, SessionGuidance } from "../state/types.js";
+import type { TaskOutput, Memory, RelatedStagingArtifacts, SessionBudget, SessionGuidance, Staging, Task } from "../state/types.js";
 import {
   textResponse,
   textErrorResponse,
   formatStagingComplete,
   formatTaskOutputSaved,
-  getStatusIcon,
 } from "../utils/format.js";
 
 /**
@@ -28,12 +27,14 @@ export function registerStagingTools(server: McpServer, projectRoot: string): vo
   // ============ zscode:start ============
   server.tool(
     "zscode:start",
-    "Start a specific staging phase of a plan. Sets the staging status to 'in_progress' and prepares the artifacts directory. Automatically includes artifacts from dependent stagings and relevant memories. Use this when you're ready to begin work on a staging.",
+    "Start a specific staging phase of a plan. Sets the staging status to 'in_progress' and prepares the artifacts directory. Automatically includes artifacts from dependent stagings and relevant memories.\n\n⚠️ **IMPORTANT: USER CONSENT REQUIRED**\nDO NOT call this tool automatically. ALWAYS ask the user for explicit permission before starting a staging phase. Present the staging details and wait for user approval first.",
     {
       planId: z.string().describe("Plan ID (e.g., plan-abc12345)"),
       stagingId: z.string().describe("Staging ID to start (e.g., staging-0001)"),
       includeArtifacts: z.boolean().default(true).describe("Include artifacts from dependent stagings"),
       includeMemories: z.boolean().default(true).describe("Include relevant staging-start memories"),
+      autoStartTasks: z.boolean().default(false)
+        .describe("For parallel stagings: automatically mark all executable tasks as 'in_progress'. Use this when you plan to work on all tasks simultaneously."),
       json: z.boolean().default(false).describe("If true, return JSON instead of human-readable text"),
     },
     async (args) => {
@@ -65,8 +66,28 @@ export function registerStagingTools(server: McpServer, projectRoot: string): vo
         await artifactsManager.createStagingArtifactsDir(args.planId, args.stagingId);
 
         // Get executable tasks
-        const executableTasks = manager.getExecutableTasks(args.stagingId);
+        let executableTasks = manager.getExecutableTasks(args.stagingId);
         const allTasks = manager.getTasksByStaging(args.stagingId);
+
+        // Auto-start tasks if requested (for parallel staging execution)
+        let autoStartedTasks: Array<{ taskId: string; taskTitle: string }> = [];
+        if (args.autoStartTasks && startedStaging.execution_type === "parallel" && executableTasks.length > 0) {
+          // Use batch update to start all tasks at once
+          const updates = executableTasks.map(t => ({
+            taskId: t.id,
+            status: "in_progress" as const,
+          }));
+
+          const batchResult = await manager.updateTasksStatus(updates);
+
+          // Track which tasks were auto-started
+          autoStartedTasks = batchResult.results
+            .filter(r => r.success && r.newStatus === "in_progress")
+            .map(r => ({ taskId: r.taskId, taskTitle: r.taskTitle }));
+
+          // Refresh executable tasks after auto-start (they'll now be in_progress)
+          executableTasks = manager.getExecutableTasks(args.stagingId);
+        }
 
         // Get related artifacts from dependent stagings
         let relatedArtifacts: RelatedStagingArtifacts[] = [];
@@ -117,6 +138,11 @@ export function registerStagingTools(server: McpServer, projectRoot: string): vo
           };
         }
 
+        // Refresh task list to get current status
+        const refreshedTasks = manager.getTasksByStaging(args.stagingId);
+        const inProgressTasks = refreshedTasks.filter(t => t.status === "in_progress");
+        const pendingTasks = refreshedTasks.filter(t => t.status === "pending");
+
         return {
           success: true,
           message: `Staging "${startedStaging.name}" started`,
@@ -134,9 +160,11 @@ export function registerStagingTools(server: McpServer, projectRoot: string): vo
           artifactsPath: startedStaging.artifacts_path,
           // Session guidance for context management
           sessionGuidance,
+          // Auto-started tasks info
+          autoStartedTasks: autoStartedTasks.length > 0 ? autoStartedTasks : undefined,
           tasks: {
             total: allTasks.length,
-            executable: executableTasks.map(t => ({
+            inProgress: inProgressTasks.map(t => ({
               id: t.id,
               title: t.title,
               priority: t.priority,
@@ -146,16 +174,28 @@ export function registerStagingTools(server: McpServer, projectRoot: string): vo
               cross_staging_refs: t.cross_staging_refs,
               memory_tags: t.memory_tags,
             })),
-            pending: allTasks.filter(t => t.status === "pending").length,
+            pending: pendingTasks.map(t => ({
+              id: t.id,
+              title: t.title,
+              priority: t.priority,
+              execution_mode: t.execution_mode,
+              model: t.model,
+              depends_on: t.depends_on,
+              cross_staging_refs: t.cross_staging_refs,
+              memory_tags: t.memory_tags,
+            })),
           },
-          // Related artifacts from dependent stagings
-          relatedArtifacts: relatedArtifacts.length > 0 ? relatedArtifacts : undefined,
-          // Applied memories for staging-start (removed appliedMemoriesText to reduce context)
+          // Related artifacts from dependent stagings (summaries only for context reduction)
+          relatedArtifacts: relatedArtifacts.length > 0 ? relatedArtifacts.map(ra => ({
+            stagingId: ra.stagingId,
+            stagingName: ra.stagingName,
+            taskCount: Object.keys(ra.taskOutputs).length,
+          })) : undefined,
+          // Applied memories for staging-start (titles only for context reduction)
           appliedMemories: appliedMemories.length > 0 ? appliedMemories.map(m => ({
             id: m.id,
             category: m.category,
             title: m.title,
-            content: m.content,
             priority: m.priority,
           })) : undefined,
         };
@@ -167,23 +207,73 @@ export function registerStagingTools(server: McpServer, projectRoot: string): vo
         }
         // Default: Human-readable format
         const data = result.data;
-        const taskLines = data.tasks.executable.map((t: { title: string; status?: string; priority: string }) =>
-          `   ${getStatusIcon(t.status || "pending")} ${t.title} [${t.priority}]`
-        ).join("\n");
 
         const lines = [
-          `🚀 Started: **${data.staging.name}**`,
+          "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
+          "⚠️ **REMINDER: Did you ask user permission?**",
+          "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
+          "",
+          `🚀 Started: **${data.staging.name}** (${data.staging.id})`,
         ];
         if (data.staging.description) {
           lines.push(`   ${data.staging.description}`);
         }
-        lines.push(`   Tasks: ${data.tasks.executable.length}/${data.tasks.total} ready`);
+
+        // Task counts
+        const inProgressCount = data.tasks.inProgress?.length || 0;
+        const pendingCount = data.tasks.pending?.length || 0;
+        lines.push(`   Tasks: ${inProgressCount} in_progress, ${pendingCount} pending (${data.tasks.total} total)`);
+
         if (data.sessionGuidance?.budget) {
           lines.push(`   Budget: ${data.sessionGuidance.budget}`);
         }
-        if (taskLines) {
-          lines.push("", "**Executable Tasks:**", taskLines);
+
+        // Auto-started tasks notification
+        if (data.autoStartedTasks && data.autoStartedTasks.length > 0) {
+          lines.push("");
+          lines.push(`✅ **Auto-started ${data.autoStartedTasks.length} tasks** (parallel execution)`);
         }
+
+        // In-progress tasks
+        if (data.tasks.inProgress && data.tasks.inProgress.length > 0) {
+          const inProgressLines = data.tasks.inProgress.map((t: {
+            id: string;
+            title: string;
+            priority: string;
+            model?: string;
+          }) => {
+            const modelIndicator = formatModelIndicator(t.model, data.staging.default_model);
+            return `   🔄 ${t.title} (${t.id}) [${t.priority}]${modelIndicator}`;
+          }).join("\n");
+          lines.push("", "**In Progress:**", inProgressLines);
+        }
+
+        // Pending tasks
+        if (data.tasks.pending && data.tasks.pending.length > 0) {
+          const pendingLines = data.tasks.pending.map((t: {
+            id: string;
+            title: string;
+            priority: string;
+            model?: string;
+          }) => {
+            const modelIndicator = formatModelIndicator(t.model, data.staging.default_model);
+            return `   ⏳ ${t.title} (${t.id}) [${t.priority}]${modelIndicator}`;
+          }).join("\n");
+          lines.push("", "**Pending:**", pendingLines);
+        }
+
+        // Check if any task requires opus
+        const allTasks = [...(data.tasks.inProgress || []), ...(data.tasks.pending || [])];
+        const opusTasks = allTasks.filter((t: { model?: string }) =>
+          t.model === "opus" || (!t.model && data.staging.default_model === "opus")
+        );
+
+        if (opusTasks.length > 0) {
+          lines.push("");
+          lines.push(`⚠️ **${opusTasks.length} task(s) require Opus model** for code analysis/writing`);
+          lines.push(`   Use Task tool with \`model: "opus"\` for these tasks`);
+        }
+
         return textResponse(lines.join("\n"));
       } else {
         if (args.json) {
@@ -216,14 +306,79 @@ export function registerStagingTools(server: McpServer, projectRoot: string): vo
 
         await manager.completeStaging(args.stagingId);
 
+        // Find next staging in the plan
+        const allStagings = manager.getStagingsByPlan(staging.planId);
+        const currentIndex = allStagings.findIndex(s => s.id === args.stagingId);
+        const nextStaging = currentIndex >= 0 && currentIndex < allStagings.length - 1
+          ? allStagings[currentIndex + 1]
+          : null;
+
+        // Get next staging info if exists
+        let nextStagingInfo = null;
+        if (nextStaging) {
+          const nextTasks = manager.getTasksByStaging(nextStaging.id);
+          const estimatedContextTokens = estimateContextUsage(nextStaging, nextTasks);
+
+          nextStagingInfo = {
+            id: nextStaging.id,
+            name: nextStaging.name,
+            description: nextStaging.description,
+            taskCount: nextTasks.length,
+            execution_type: nextStaging.execution_type,
+            session_budget: nextStaging.session_budget,
+            recommended_sessions: nextStaging.recommended_sessions,
+            estimatedContextTokens,
+            recommendation: getProgressRecommendation(nextStaging, estimatedContextTokens),
+          };
+        }
+
+        // Check if plan is completed
+        const remainingStagings = allStagings.filter(s => s.status !== "completed" && s.id !== args.stagingId);
+        const planCompleted = remainingStagings.length === 0;
+
         return {
           success: true,
           name: staging.name,
+          stagingId: staging.id,
+          planId: staging.planId,
+          nextStaging: nextStagingInfo,
+          planCompleted,
         };
       }, "complete_staging");
 
       if (result.success) {
-        return textResponse(formatStagingComplete(result.data.name));
+        const data = result.data;
+        const lines = [formatStagingComplete(data.name)];
+
+        if (data.planCompleted) {
+          lines.push("");
+          lines.push("🎉 **Plan completed!** All stagings are done.");
+          lines.push(`   Use \`zscode:archive\` to archive: ${data.planId}`);
+        } else if (data.nextStaging) {
+          const next = data.nextStaging;
+          lines.push("");
+          lines.push("## Next Staging Available");
+          lines.push(`📋 **${next.name}** (${next.id})`);
+          if (next.description) {
+            lines.push(`   ${next.description}`);
+          }
+          lines.push(`   Tasks: ${next.taskCount} | Execution: ${next.execution_type}`);
+          lines.push(`   Est. Context: ~${formatTokens(next.estimatedContextTokens)}`);
+          lines.push("");
+          lines.push(`### Recommendation`);
+          lines.push(`${next.recommendation.icon} **${next.recommendation.action}**`);
+          lines.push(`   ${next.recommendation.reason}`);
+          lines.push("");
+          lines.push("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+          lines.push("⚠️ **USER CONSENT REQUIRED**");
+          lines.push("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+          lines.push("**DO NOT proceed to the next staging automatically.**");
+          lines.push("**Ask the user for permission before starting the next phase.**");
+          lines.push("");
+          lines.push(`▶️ When approved: \`zscode:start ${data.planId} ${next.id}\``);
+        }
+
+        return textResponse(lines.join("\n"));
       } else {
         return textErrorResponse(result.error.message);
       }
@@ -302,8 +457,8 @@ export function registerStagingTools(server: McpServer, projectRoot: string): vo
       planId: z.string().describe("Plan ID"),
       stagingId: z.string().describe("Staging ID to get artifacts from"),
       taskId: z.string().optional().describe("Specific task ID (optional, if omitted returns all)"),
-      lightweight: z.boolean().default(false)
-        .describe("If true, exclude 'data' field from outputs for reduced context size"),
+      lightweight: z.boolean().default(true)
+        .describe("If true, exclude 'data' field from outputs for reduced context size. Default true for context optimization."),
     },
     async (args) => {
       const result = await withErrorHandling(async () => {
@@ -418,4 +573,126 @@ export function registerStagingTools(server: McpServer, projectRoot: string): vo
       }
     }
   );
+}
+
+// ============ Helper functions for staging completion ============
+
+/**
+ * Estimate context token usage for a staging
+ * Based on task count, complexity hints, and session budget
+ */
+function estimateContextUsage(staging: Staging, tasks: Task[]): number {
+  // Base tokens per task (description, code references, etc.)
+  const baseTokensPerTask = 2000;
+
+  // Session budget multipliers
+  const budgetMultiplier: Record<SessionBudget, number> = {
+    minimal: 0.5,
+    standard: 1.0,
+    extensive: 2.0,
+  };
+
+  const multiplier = staging.session_budget
+    ? budgetMultiplier[staging.session_budget]
+    : 1.0;
+
+  // Calculate based on task count and complexity
+  let totalTokens = tasks.length * baseTokensPerTask * multiplier;
+
+  // Add overhead for parallel execution (more context needed)
+  if (staging.execution_type === "parallel") {
+    totalTokens *= 1.2;
+  }
+
+  // Use recommended_sessions if available
+  if (staging.recommended_sessions) {
+    // Assume ~100k tokens per session
+    totalTokens = Math.max(totalTokens, staging.recommended_sessions * 100000);
+  }
+
+  return Math.round(totalTokens);
+}
+
+/**
+ * Get recommendation for whether to continue or start new session
+ */
+function getProgressRecommendation(
+  staging: Staging,
+  estimatedTokens: number
+): { action: "Continue" | "New Session"; icon: string; reason: string } {
+  // Thresholds
+  const CONTINUE_THRESHOLD = 50000; // ~50k tokens is safe to continue
+  const WARNING_THRESHOLD = 100000; // ~100k tokens might need new session
+
+  // Check session budget hints
+  if (staging.session_budget === "extensive" || staging.recommended_sessions && staging.recommended_sessions >= 2) {
+    return {
+      action: "New Session",
+      icon: "🔄",
+      reason: "This staging is marked as extensive. Starting a new session is recommended for optimal context management.",
+    };
+  }
+
+  if (staging.session_budget === "minimal" || estimatedTokens < CONTINUE_THRESHOLD) {
+    return {
+      action: "Continue",
+      icon: "▶️",
+      reason: "This staging has minimal context requirements. Safe to continue in current session.",
+    };
+  }
+
+  if (estimatedTokens >= WARNING_THRESHOLD) {
+    return {
+      action: "New Session",
+      icon: "🔄",
+      reason: `Estimated context (~${formatTokens(estimatedTokens)}) may exceed optimal limits. Consider starting a new session.`,
+    };
+  }
+
+  return {
+    action: "Continue",
+    icon: "▶️",
+    reason: "Standard context requirements. Can continue in current session.",
+  };
+}
+
+/**
+ * Format token count for display
+ */
+function formatTokens(tokens: number): string {
+  if (tokens >= 1000000) {
+    return `${(tokens / 1000000).toFixed(1)}M tokens`;
+  }
+  if (tokens >= 1000) {
+    return `${(tokens / 1000).toFixed(0)}K tokens`;
+  }
+  return `${tokens} tokens`;
+}
+
+/**
+ * Format model indicator for task display
+ * Shows warning for opus tasks that require model switching
+ */
+function formatModelIndicator(taskModel?: string, stagingDefault?: string): string {
+  const effectiveModel = taskModel || stagingDefault;
+
+  if (!effectiveModel) {
+    return "";
+  }
+
+  // Opus tasks need special indication - they require model switching
+  if (effectiveModel === "opus") {
+    return " 🔷 **opus**";
+  }
+
+  // Sonnet and haiku are informational
+  if (effectiveModel === "sonnet") {
+    return " 🔶 sonnet";
+  }
+
+  if (effectiveModel === "haiku") {
+    return " ⚡ haiku";
+  }
+
+  return ` [${effectiveModel}]`;
 }

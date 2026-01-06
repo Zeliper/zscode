@@ -9,6 +9,93 @@ import {
   ValidationError,
 } from "../errors/index.js";
 
+// ============ Human-Readable Formatters ============
+function formatPlanUpdate(plan: { id: string; title: string; description?: string; status: string }): string {
+  const lines: string[] = [];
+  lines.push(`✅ **Plan Updated**: ${plan.title}`);
+  lines.push(`   ID: ${plan.id}`);
+  lines.push(`   Status: ${plan.status}`);
+  if (plan.description) {
+    lines.push(`   Description: ${plan.description}`);
+  }
+  return lines.join("\n");
+}
+
+function formatStagingUpdate(staging: {
+  id: string;
+  name: string;
+  description?: string;
+  execution_type: string;
+  status: string;
+  default_model?: string;
+  session_budget?: string;
+  recommended_sessions?: number;
+}): string {
+  const lines: string[] = [];
+  lines.push(`✅ **Staging Updated**: ${staging.name}`);
+  lines.push(`   ID: ${staging.id}`);
+  lines.push(`   Execution: ${staging.execution_type} | Status: ${staging.status}`);
+  if (staging.default_model) lines.push(`   Model: ${staging.default_model}`);
+  if (staging.session_budget) lines.push(`   Budget: ${staging.session_budget}`);
+  return lines.join("\n");
+}
+
+function formatStagingAdd(staging: { id: string; name: string; order: number; execution_type: string }, planId: string, totalStagings: number): string {
+  const lines: string[] = [];
+  lines.push(`✅ **Staging Added**: ${staging.name}`);
+  lines.push(`   ID: ${staging.id}`);
+  lines.push(`   Position: ${staging.order + 1}/${totalStagings}`);
+  lines.push(`   Execution: ${staging.execution_type}`);
+  lines.push(`   Plan: ${planId}`);
+  return lines.join("\n");
+}
+
+function formatStagingRemove(name: string, stagingId: string, tasksRemoved: number, planId: string, remainingStagings: number): string {
+  const lines: string[] = [];
+  lines.push(`🗑️ **Staging Removed**: ${name}`);
+  lines.push(`   ID: ${stagingId}`);
+  lines.push(`   Tasks removed: ${tasksRemoved}`);
+  lines.push(`   Plan: ${planId} (${remainingStagings} stagings remaining)`);
+  return lines.join("\n");
+}
+
+function formatTaskAdd(task: { id: string; title: string; priority: string; order?: number; model?: string }, stagingName: string, totalTasks: number): string {
+  const lines: string[] = [];
+  lines.push(`✅ **Task Added**: ${task.title}`);
+  lines.push(`   ID: ${task.id}`);
+  lines.push(`   Priority: ${task.priority} | Order: ${(task.order ?? 0) + 1}/${totalTasks}`);
+  if (task.model) lines.push(`   Model: ${task.model}`);
+  lines.push(`   Staging: ${stagingName}`);
+  return lines.join("\n");
+}
+
+function formatTaskRemove(title: string, taskId: string, stagingId: string, remainingTasks: number): string {
+  const lines: string[] = [];
+  lines.push(`🗑️ **Task Removed**: ${title}`);
+  lines.push(`   ID: ${taskId}`);
+  lines.push(`   Staging: ${stagingId} (${remainingTasks} tasks remaining)`);
+  return lines.join("\n");
+}
+
+function formatTaskUpdate(task: {
+  id: string;
+  title: string;
+  priority: string;
+  status: string;
+  execution_mode: string;
+  model?: string;
+  depends_on: string[];
+}): string {
+  const lines: string[] = [];
+  lines.push(`✅ **Task Updated**: ${task.title}`);
+  lines.push(`   ID: ${task.id}`);
+  lines.push(`   Priority: ${task.priority} | Status: ${task.status}`);
+  lines.push(`   Execution: ${task.execution_mode}`);
+  if (task.model) lines.push(`   Model: ${task.model}`);
+  if (task.depends_on.length > 0) lines.push(`   Dependencies: ${task.depends_on.join(", ")}`);
+  return lines.join("\n");
+}
+
 /**
  * Register modify-related tools
  */
@@ -52,12 +139,11 @@ export function registerModifyTools(server: McpServer): void {
       }, "update_plan");
 
       if (result.success) {
-        return {
-          content: [{ type: "text" as const, text: JSON.stringify(result.data, null, 2) }],
-        };
+        const text = formatPlanUpdate(result.data.plan);
+        return { content: [{ type: "text" as const, text }] };
       } else {
         return {
-          content: [{ type: "text" as const, text: JSON.stringify(result.error, null, 2) }],
+          content: [{ type: "text" as const, text: `❌ ${result.error.message}` }],
           isError: true,
         };
       }
@@ -119,12 +205,11 @@ export function registerModifyTools(server: McpServer): void {
       }, "update_staging");
 
       if (result.success) {
-        return {
-          content: [{ type: "text" as const, text: JSON.stringify(result.data, null, 2) }],
-        };
+        const text = formatStagingUpdate(result.data.staging);
+        return { content: [{ type: "text" as const, text }] };
       } else {
         return {
-          content: [{ type: "text" as const, text: JSON.stringify(result.error, null, 2) }],
+          content: [{ type: "text" as const, text: `❌ ${result.error.message}` }],
           isError: true,
         };
       }
@@ -188,12 +273,11 @@ export function registerModifyTools(server: McpServer): void {
       }, "add_staging");
 
       if (result.success) {
-        return {
-          content: [{ type: "text" as const, text: JSON.stringify(result.data, null, 2) }],
-        };
+        const text = formatStagingAdd(result.data.staging, result.data.plan.id, result.data.plan.totalStagings);
+        return { content: [{ type: "text" as const, text }] };
       } else {
         return {
-          content: [{ type: "text" as const, text: JSON.stringify(result.error, null, 2) }],
+          content: [{ type: "text" as const, text: `❌ ${result.error.message}` }],
           isError: true,
         };
       }
@@ -244,12 +328,12 @@ export function registerModifyTools(server: McpServer): void {
       }, "remove_staging");
 
       if (result.success) {
-        return {
-          content: [{ type: "text" as const, text: JSON.stringify(result.data, null, 2) }],
-        };
+        const { removed, plan } = result.data;
+        const text = formatStagingRemove(removed.name, removed.stagingId, removed.tasksRemoved, plan.id, plan.remainingStagings);
+        return { content: [{ type: "text" as const, text }] };
       } else {
         return {
-          content: [{ type: "text" as const, text: JSON.stringify(result.error, null, 2) }],
+          content: [{ type: "text" as const, text: `❌ ${result.error.message}` }],
           isError: true,
         };
       }
@@ -308,12 +392,11 @@ export function registerModifyTools(server: McpServer): void {
       }, "add_task");
 
       if (result.success) {
-        return {
-          content: [{ type: "text" as const, text: JSON.stringify(result.data, null, 2) }],
-        };
+        const text = formatTaskAdd(result.data.task, result.data.staging.name, result.data.staging.totalTasks);
+        return { content: [{ type: "text" as const, text }] };
       } else {
         return {
-          content: [{ type: "text" as const, text: JSON.stringify(result.error, null, 2) }],
+          content: [{ type: "text" as const, text: `❌ ${result.error.message}` }],
           isError: true,
         };
       }
@@ -362,12 +445,12 @@ export function registerModifyTools(server: McpServer): void {
       }, "remove_task");
 
       if (result.success) {
-        return {
-          content: [{ type: "text" as const, text: JSON.stringify(result.data, null, 2) }],
-        };
+        const { removed, staging } = result.data;
+        const text = formatTaskRemove(removed.title, removed.taskId, staging.id, staging.remainingTasks);
+        return { content: [{ type: "text" as const, text }] };
       } else {
         return {
-          content: [{ type: "text" as const, text: JSON.stringify(result.error, null, 2) }],
+          content: [{ type: "text" as const, text: `❌ ${result.error.message}` }],
           isError: true,
         };
       }
@@ -426,12 +509,11 @@ export function registerModifyTools(server: McpServer): void {
       }, "update_task_details");
 
       if (result.success) {
-        return {
-          content: [{ type: "text" as const, text: JSON.stringify(result.data, null, 2) }],
-        };
+        const text = formatTaskUpdate(result.data.task);
+        return { content: [{ type: "text" as const, text }] };
       } else {
         return {
-          content: [{ type: "text" as const, text: JSON.stringify(result.error, null, 2) }],
+          content: [{ type: "text" as const, text: `❌ ${result.error.message}` }],
           isError: true,
         };
       }

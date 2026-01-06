@@ -32,6 +32,37 @@ import {
   CrossTaskRefSchema,
   CrossStagingTaskRefInputSchema,
   STATE_VERSION,
+  // Template schemas
+  TemplateSchema,
+  TemplateCategorySchema,
+  TemplateTaskDefSchema,
+  TemplateStagingDefSchema,
+  CreateTemplateInputSchema,
+  UpdateTemplateInputSchema,
+  ApplyTemplateInputSchema,
+  ListTemplatesInputSchema,
+  // Snapshot schemas
+  SnapshotSchema,
+  SnapshotTypeSchema,
+  SnapshotTriggerSchema,
+  SnapshotDataSchema,
+  CreateSnapshotInputSchema,
+  RestoreSnapshotInputSchema,
+  ListSnapshotsInputSchema,
+  DeleteSnapshotInputSchema,
+  // Search schemas
+  SearchEntityTypeSchema,
+  SearchOperatorSchema,
+  SearchFilterSchema,
+  SearchSortSchema,
+  SearchQuerySchema,
+  SearchResultItemSchema,
+  SearchResultSchema,
+  // Pagination schemas
+  PaginationRequestSchema,
+  PaginationMetaSchema,
+  CursorPaginationRequestSchema,
+  CursorPaginationMetaSchema,
 } from "./schema.js";
 
 // Re-export constant for convenience
@@ -231,3 +262,76 @@ export interface StagingStartContext {
 }
 
 export type TaskContext = TaskStartContext | TaskCompleteContext;
+
+// ============ Template Types ============
+export type Template = z.infer<typeof TemplateSchema>;
+export type TemplateCategory = z.infer<typeof TemplateCategorySchema>;
+export type TemplateTaskDef = z.infer<typeof TemplateTaskDefSchema>;
+export type TemplateStagingDef = z.infer<typeof TemplateStagingDefSchema>;
+export type CreateTemplateInput = z.infer<typeof CreateTemplateInputSchema>;
+export type UpdateTemplateInput = z.infer<typeof UpdateTemplateInputSchema>;
+export type ApplyTemplateInput = z.infer<typeof ApplyTemplateInputSchema>;
+export type ListTemplatesInput = z.infer<typeof ListTemplatesInputSchema>;
+
+// ============ Snapshot Types ============
+export type Snapshot = z.infer<typeof SnapshotSchema>;
+export type SnapshotType = z.infer<typeof SnapshotTypeSchema>;
+export type SnapshotTrigger = z.infer<typeof SnapshotTriggerSchema>;
+export type SnapshotData = z.infer<typeof SnapshotDataSchema>;
+export type CreateSnapshotInput = z.infer<typeof CreateSnapshotInputSchema>;
+export type RestoreSnapshotInput = z.infer<typeof RestoreSnapshotInputSchema>;
+export type ListSnapshotsInput = z.infer<typeof ListSnapshotsInputSchema>;
+export type DeleteSnapshotInput = z.infer<typeof DeleteSnapshotInputSchema>;
+
+// ============ Search Types ============
+export type SearchEntityType = z.infer<typeof SearchEntityTypeSchema>;
+export type SearchOperator = z.infer<typeof SearchOperatorSchema>;
+export type SearchFilter = z.infer<typeof SearchFilterSchema>;
+export type SearchSort = z.infer<typeof SearchSortSchema>;
+export type SearchQuery = z.infer<typeof SearchQuerySchema>;
+export type SearchResultItem = z.infer<typeof SearchResultItemSchema>;
+export type SearchResult = z.infer<typeof SearchResultSchema>;
+
+// ============ Pagination Types ============
+export type PaginationRequest = z.infer<typeof PaginationRequestSchema>;
+export type PaginationMeta = z.infer<typeof PaginationMetaSchema>;
+export type CursorPaginationRequest = z.infer<typeof CursorPaginationRequestSchema>;
+export type CursorPaginationMeta = z.infer<typeof CursorPaginationMetaSchema>;
+
+// ============ Bulk Operation Types ============
+export interface BulkUpdateResult<T> {
+  success: number;
+  failed: number;
+  results: Array<{
+    id: string;
+    success: boolean;
+    error?: string;
+    data?: T;
+  }>;
+}
+
+export interface BulkDeleteResult {
+  deleted: number;
+  failed: number;
+  errors: Array<{ id: string; error: string }>;
+}
+
+// ============ Lazy Loading Types ============
+export interface LazyLoadConfig {
+  /** Enable lazy loading for tasks (don't load task details until needed) */
+  lazyTasks?: boolean;
+  /** Enable lazy loading for outputs (don't load task outputs until needed) */
+  lazyOutputs?: boolean;
+  /** Maximum number of items to load per batch */
+  batchSize?: number;
+}
+
+export interface PaginatedResult<T> {
+  items: T[];
+  pagination: PaginationMeta;
+}
+
+export interface CursorPaginatedResult<T> {
+  items: T[];
+  cursor: CursorPaginationMeta;
+}
